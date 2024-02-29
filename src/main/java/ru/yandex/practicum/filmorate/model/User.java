@@ -29,7 +29,7 @@ public class User {
     private final String login;
     private String name;
     private final LocalDate birthday;
-    private final static DateTimeFormatter birthdateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private final DateTimeFormatter birthdateFormatter;
     private final static IdCounter idCounter = new IdCounter();
 
 
@@ -42,6 +42,8 @@ public class User {
         this.email = email;
         this.login = login;
         this.name = name;
+
+        birthdateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         this.birthday = LocalDate.parse(birthday, birthdateFormatter);
 
     }

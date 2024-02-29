@@ -23,9 +23,8 @@ public class Film {
     private final String name;
     private final String description;
     private final LocalDate releaseDate;
-    private final static DateTimeFormatter releaseDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private final DateTimeFormatter releaseDateFormatter;
     private final int duration;
-
     private static IdCounter idCounter = new IdCounter();
 
 
@@ -37,7 +36,10 @@ public class Film {
             this.id = id;
         this.name = name;
         this.description = description;
+
+        releaseDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         this.releaseDate = LocalDate.parse(releaseDate, releaseDateFormatter);
+
         this.duration = duration;
 
     }
