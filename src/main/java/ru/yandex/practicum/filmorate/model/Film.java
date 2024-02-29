@@ -25,13 +25,12 @@ public class Film {
     private final LocalDate releaseDate;
     private final DateTimeFormatter releaseDateFormatter;
     private final int duration;
-    private static IdCounter idCounter = new IdCounter();
 
 
     public Film(int id, @NonNull String name, String description, String releaseDate, int duration) {
 
         if (id == 0)
-            this.id = idCounter.getId();
+            this.id = IdCounter.getId();
         else
             this.id = id;
         this.name = name;
