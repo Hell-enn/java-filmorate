@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
 import lombok.NonNull;
-import ru.yandex.practicum.filmorate.utils.IdCounter;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -19,7 +18,7 @@ import java.time.format.DateTimeFormatter;
 @NonNull
 public class User {
 
-    private final int id;
+    private int id;
     @NonNull
     @NotBlank
     @Email
@@ -30,15 +29,11 @@ public class User {
     private String name;
     private final LocalDate birthday;
     private final DateTimeFormatter birthdateFormatter;
-    private final static IdCounter idCounter = new IdCounter();
 
 
     public User(int id, @NonNull String email, @NonNull String login, String name, String birthday) {
 
-        if (id == 0)
-            this.id = idCounter.getId();
-        else
-            this.id = id;
+        this.id = id;
         this.email = email;
         this.login = login;
         this.name = name;

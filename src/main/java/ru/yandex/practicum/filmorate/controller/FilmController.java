@@ -18,8 +18,9 @@ import java.util.List;
 @RestController()
 public class FilmController {
 
-    List<Film> films = new ArrayList<>();
-    List<Integer> ids = new ArrayList<>();
+    private final List<Film> films = new ArrayList<>();
+    private final List<Integer> ids = new ArrayList<>();
+    private int id = 0;
 
 
     /**
@@ -35,8 +36,12 @@ public class FilmController {
 
         validateFilm(film);
 
+        if (film.getId() == 0) {
+            film.setId(++id);
+        }
+
         if (ids.contains(film.getId())) {
-            throw new ValidationException("Фильм уже есть в списке!");
+            return null;
         }
 
         films.add(film);

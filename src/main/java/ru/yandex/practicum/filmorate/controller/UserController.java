@@ -18,8 +18,9 @@ import java.util.List;
 @RestController()
 public class UserController {
 
-    List<User> users = new ArrayList<>();
-    List<Integer> ids = new ArrayList<>();
+    private final List<User> users = new ArrayList<>();
+    private final List<Integer> ids = new ArrayList<>();
+    private int id = 0;
 
 
     /**
@@ -34,6 +35,10 @@ public class UserController {
     public User postUser(@Valid @RequestBody User user) {
 
         validateUser(user);
+
+        if (user.getId() == 0) {
+            user.setId(++id);
+        }
 
         if (ids.contains(user.getId())) {
             return null;
