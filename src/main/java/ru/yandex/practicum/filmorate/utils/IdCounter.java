@@ -10,9 +10,9 @@ package ru.yandex.practicum.filmorate.utils;
 
 public class IdCounter {
 
-    private static int id = 0;
+    private int id = 0;
 
-    public static int getId() {
+    public int getId() {
         return ++id;
     }
 

@@ -30,12 +30,13 @@ public class User {
     private String name;
     private final LocalDate birthday;
     private final DateTimeFormatter birthdateFormatter;
+    private final static IdCounter idCounter = new IdCounter();
 
 
     public User(int id, @NonNull String email, @NonNull String login, String name, String birthday) {
 
         if (id == 0)
-            this.id = IdCounter.getId();
+            this.id = idCounter.getId();
         else
             this.id = id;
         this.email = email;

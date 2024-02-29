@@ -36,7 +36,7 @@ public class FilmController {
         validateFilm(film);
 
         if (ids.contains(film.getId())) {
-            return null;
+            throw new ValidationException("Фильм уже есть в списке!");
         }
 
         films.add(film);
