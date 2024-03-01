@@ -23,7 +23,7 @@ public class Film {
     private final String name;
     @Size(min = 1, max = 200)
     private final String description;
-    @JsonFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private final LocalDate releaseDate;
     @Min(1)
     private final int duration;
