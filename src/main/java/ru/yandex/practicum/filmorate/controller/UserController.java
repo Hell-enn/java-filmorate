@@ -6,8 +6,8 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Класс UserController предоставляет ряд эндпоинтов для запросов
@@ -18,8 +18,7 @@ import java.util.List;
 @RestController()
 public class UserController {
 
-    private final List<User> users = new ArrayList<>();
-    private final List<Integer> ids = new ArrayList<>();
+    private final Map<Integer, User> users = new HashMap<>();
     private int id = 0;
 
 
@@ -40,12 +39,11 @@ public class UserController {
             user.setId(++id);
         }
 
-        if (ids.contains(user.getId())) {
+        if (users.containsKey(user.getId())) {
             return null;
         }
 
-        users.add(user);
-        ids.add(user.getId());
+        users.put(user.getId(), user);
 
         log.debug("Пользователь с логином {} добавлен!", user.getLogin());
 
@@ -66,19 +64,12 @@ public class UserController {
 
         validateUser(user);
 
-        if (!ids.contains(user.getId())) {
+        if (!users.containsKey(user.getId())) {
             throw new ValidationException("Пользователь отсутствует в списке!");
         }
 
-        for (User userFromList: users) {
-            if (userFromList.getId() == user.getId()) {
-                users.remove(userFromList);
-                break;
-            }
-        }
+        users.put(user.getId(), user);
 
-        users.add(user);
-        ids.add(user.getId());
         log.debug("Пользователь с логином {} обновлён!", user.getLogin());
 
         return user;
@@ -90,9 +81,9 @@ public class UserController {
      * @return
      */
     @GetMapping("/users")
-    public List<User> getUsers() {
+    public Map<Integer, User> getUsers() {
 
-        return new ArrayList<>(users);
+        return new HashMap<>(users);
 
     }
 
@@ -112,12 +103,8 @@ public class UserController {
 
         if (user == null)
             message = "Вы не передали информацию о пользователе!";
-        else if (user.getEmail().isBlank())
-            message = "Адрес электонной почты пользователя отсутствует!";
         else if (!user.getEmail().contains("@"))
             message = "В указанном адресе электронной почты пользователя отсутствует символ @!";
-        else if (user.getLogin().isBlank())
-            message = "Логин пользователя отсутствует!";
         else if (user.getLogin().contains(" "))
             message = "Логин содержит пробелы!";
         else if (user.getBirthday().isAfter(LocalDate.now()))

@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Класс Film - бизнес-сущность. Необходм для
@@ -13,29 +15,17 @@ import java.time.format.DateTimeFormatter;
  * обозначенным рядом свойств.
  */
 @Data
-@NonNull
+@AllArgsConstructor
 public class Film {
 
     private int id;
     @NonNull
-    @NotBlank
     private final String name;
+    @Size(min = 1, max = 200)
     private final String description;
+    @JsonFormat(pattern="yyyy-MM-dd")
     private final LocalDate releaseDate;
-    private final DateTimeFormatter releaseDateFormatter;
+    @Min(1)
     private final int duration;
-
-    public Film(int id, @NonNull String name, String description, String releaseDate, int duration) {
-
-        this.id = id;
-        this.name = name;
-        this.description = description;
-
-        releaseDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        this.releaseDate = LocalDate.parse(releaseDate, releaseDateFormatter);
-
-        this.duration = duration;
-
-    }
 
 }

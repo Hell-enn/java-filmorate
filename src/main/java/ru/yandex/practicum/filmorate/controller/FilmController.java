@@ -6,8 +6,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Класс FilmController предоставляет ряд эндпоинтов для запросов
@@ -18,8 +18,7 @@ import java.util.List;
 @RestController()
 public class FilmController {
 
-    private final List<Film> films = new ArrayList<>();
-    private final List<Integer> ids = new ArrayList<>();
+    private final Map<Integer, Film> films = new HashMap<>();
     private int id = 0;
 
 
@@ -40,12 +39,11 @@ public class FilmController {
             film.setId(++id);
         }
 
-        if (ids.contains(film.getId())) {
+        if (films.containsKey(film.getId())) {
             return null;
         }
 
-        films.add(film);
-        ids.add(film.getId());
+        films.put(film.getId(), film);
 
         log.debug("Фильм \"{}\" добавлен!", film.getName());
 
@@ -66,19 +64,11 @@ public class FilmController {
 
         validateFilm(film);
 
-        if (!ids.contains(film.getId())) {
+        if (!films.containsKey(film.getId())) {
             throw new ValidationException("Фильм отсутствует в списке!");
         }
 
-        for (Film filmFromList: films) {
-            if (filmFromList.getId() == film.getId()) {
-                films.remove(filmFromList);
-                break;
-            }
-        }
-
-        films.add(film);
-        ids.add(film.getId());
+        films.put(film.getId(), film);
         log.debug("Фильм \"{}\" обновлён!", film.getName());
 
         return film;
@@ -90,9 +80,9 @@ public class FilmController {
      * @return
      */
     @GetMapping("/films")
-    public List<Film> getFilms() {
+    public Map<Integer, Film> getFilms() {
 
-        return new ArrayList<>(films);
+        return new HashMap<>(films);
 
     }
 
@@ -112,14 +102,8 @@ public class FilmController {
 
         if (film == null)
             message = "Вы не передали информацию о фильме!";
-        else if (film.getName().isBlank())
-            message = "Имя фильма отсутствует!";
-        else if (film.getDescription().length() > 200)
-            message = "Длина описания превышает 200 символов!";
         else if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28)))
             message = "Фильм не мог быть выпущен до 28 декабря 1895!";
-        else if (film.getDuration() <= 0)
-            message = "Задана отрицательная продолжительность фильма!";
 
         if (!message.isBlank()) {
             try {
