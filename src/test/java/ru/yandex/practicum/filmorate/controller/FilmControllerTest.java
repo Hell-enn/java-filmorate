@@ -68,5 +68,24 @@ public class FilmControllerTest {
 
         assertEquals("Вы не передали информацию о фильме!", exception.getMessage());
 
+        Film film1 = new Film(1, null, "vvv", LocalDate.of(2023, 12, 12), 122);
+        Film film2 = new Film(1, "", "vvv", LocalDate.of(2023, 12, 12), 122);
+        Film film3 = new Film(1, "Film", "", LocalDate.of(2023, 12, 12), 122);
+        Film film4 = new Film(1, "Film", null, LocalDate.of(2023, 12, 12), 122);
+        Film film5 = new Film(1, "Film", "vvv", LocalDate.of(1600, 12, 12), 122);
+        Film film6 = new Film(1, "Film", "vvv", LocalDate.of(2023, 12, 12), -1);
+
+        filmController.postFilm(film1);
+        filmController.postFilm(film2);
+        filmController.postFilm(film3);
+        filmController.postFilm(film4);
+
+        exception = assertThrows(
+                ValidationException.class,
+                () -> filmController.postFilm(film5));
+
+        assertEquals("Фильм не мог быть выпущен до 28 декабря 1895!", exception.getMessage());
+
+        filmController.postFilm(film6);
     }
 }
