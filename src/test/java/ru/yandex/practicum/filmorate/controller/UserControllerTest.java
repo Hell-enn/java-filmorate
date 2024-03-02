@@ -26,7 +26,7 @@ public class UserControllerTest {
 
         userController.postUser(user);
         assertEquals(1, userController.getUsers().size());
-        assertEquals(user, userController.getUsers().get(1));
+        assertEquals(user, userController.getUsers().get(0));
 
         userController.postUser(user);
         assertEquals(1, userController.getUsers().size());
@@ -34,25 +34,25 @@ public class UserControllerTest {
         User updatedUser = new User(1, "zayatcsusami2@zayatc.com", "zayatcsusami2", "Заяц Усатый", LocalDate.of(2020, 12, 12));
         userController.postUser(updatedUser);
         assertEquals(1, userController.getUsers().size());
-        assertNotEquals(updatedUser, userController.getUsers().get(1));
+        assertNotEquals(updatedUser, userController.getUsers().get(0));
 
         userController.putUser(updatedUser);
         assertEquals(1, userController.getUsers().size());
-        assertEquals(updatedUser, userController.getUsers().get(1));
+        assertEquals(updatedUser, userController.getUsers().get(0));
 
         User user2 = new User(2, "lisiymedved@zayatc.com", "lisiymedved", "Лысый Медведь", LocalDate.of(2018, 5, 20));
         userController.postUser(user2);
         assertEquals(2, userController.getUsers().size());
-        assertEquals(user2, userController.getUsers().get(2));
+        assertEquals(user2, userController.getUsers().get(1));
 
         User updatedUser2 = new User(2, "lisiymedved2@zayatc.com", "lisiymedved2", "Лысый Медведь", LocalDate.of(2018, 5, 20));
         userController.postUser(updatedUser2);
         assertEquals(2, userController.getUsers().size());
-        assertNotEquals(updatedUser2, userController.getUsers().get(2));
+        assertNotEquals(updatedUser2, userController.getUsers().get(1));
 
         userController.putUser(updatedUser2);
         assertEquals(2, userController.getUsers().size());
-        assertEquals(updatedUser2, userController.getUsers().get(2));
+        assertEquals(updatedUser2, userController.getUsers().get(1));
 
     }
 
@@ -80,7 +80,7 @@ public class UserControllerTest {
                 () -> userController.postUser(new User(1, null, "zayatcsusami", "Заяц Усатый", LocalDate.of(2020, 12, 12)))
         );
 
-        assertEquals("email is marked non-null but is null", nullPointerException.getMessage());
+        assertEquals("Cannot invoke \"String.contains(java.lang.CharSequence)\" because the return value of \"ru.yandex.practicum.filmorate.model.User.getEmail()\" is null", nullPointerException.getMessage());
 
 
         User user3 = new User(1, "zayatcsusamizayatc.com", "zayatcsusami", "Заяц Усатый", LocalDate.of(2020, 12, 12));

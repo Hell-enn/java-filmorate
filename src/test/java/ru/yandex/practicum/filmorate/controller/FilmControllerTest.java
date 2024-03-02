@@ -28,7 +28,7 @@ public class FilmControllerTest {
         Film film = new Film(1, "Название", "Описание", LocalDate.of(2022, 10, 22), 140);
         filmController.postFilm(film);
         assertEquals(1, filmController.getFilms().size());
-        assertEquals(film, filmController.getFilms().get(1));
+        assertEquals(film, filmController.getFilms().get(0));
 
         filmController.postFilm(film);
         assertEquals(1, filmController.getFilms().size());
@@ -36,25 +36,25 @@ public class FilmControllerTest {
         Film updatedFilm = new Film(1, "Название", "Описание 2", LocalDate.of(2022, 10, 22), 140);
         filmController.postFilm(updatedFilm);
         assertEquals(1, filmController.getFilms().size());
-        Assertions.assertNotEquals(updatedFilm, filmController.getFilms().get(1));
+        Assertions.assertNotEquals(updatedFilm, filmController.getFilms().get(0));
 
         filmController.putFilm(updatedFilm);
         assertEquals(1, filmController.getFilms().size());
-        assertEquals(updatedFilm, filmController.getFilms().get(1));
+        assertEquals(updatedFilm, filmController.getFilms().get(0));
 
         Film film2 = new Film(2, "Название 2", "Описание 2", LocalDate.of(2018, 1, 1), 115);
         filmController.postFilm(film2);
         assertEquals(2, filmController.getFilms().size());
-        assertEquals(film2, filmController.getFilms().get(2));
+        assertEquals(film2, filmController.getFilms().get(1));
 
         Film updatedFilm2 = new Film(2, "Название 2", "Обновленное описание 2", LocalDate.of(2018, 1, 1), 115);
         filmController.postFilm(updatedFilm2);
         assertEquals(2, filmController.getFilms().size());
-        Assertions.assertNotEquals(updatedFilm2, filmController.getFilms().get(2));
+        Assertions.assertNotEquals(updatedFilm2, filmController.getFilms().get(1));
 
         filmController.putFilm(updatedFilm2);
         assertEquals(2, filmController.getFilms().size());
-        assertEquals(updatedFilm2, filmController.getFilms().get(2));
+        assertEquals(updatedFilm2, filmController.getFilms().get(1));
 
     }
 
