@@ -6,7 +6,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -80,9 +82,9 @@ public class FilmController {
      * @return
      */
     @GetMapping("/films")
-    public Map<Integer, Film> getFilms() {
+    public List<Film> getFilms() {
 
-        return new HashMap<>(films);
+        return new ArrayList<>(films.values());
 
     }
 
