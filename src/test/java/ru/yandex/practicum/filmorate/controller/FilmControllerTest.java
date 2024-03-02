@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
-
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -68,24 +67,48 @@ public class FilmControllerTest {
 
         assertEquals("Вы не передали информацию о фильме!", exception.getMessage());
 
-        Film film1 = new Film(1, null, "vvv", LocalDate.of(2023, 12, 12), 122);
-        Film film2 = new Film(1, "", "vvv", LocalDate.of(2023, 12, 12), 122);
-        Film film3 = new Film(1, "Film", "", LocalDate.of(2023, 12, 12), 122);
-        Film film4 = new Film(1, "Film", null, LocalDate.of(2023, 12, 12), 122);
-        Film film5 = new Film(1, "Film", "vvv", LocalDate.of(1600, 12, 12), 122);
-        Film film6 = new Film(1, "Film", "vvv", LocalDate.of(2023, 12, 12), -1);
+        NullPointerException nullPointerException = assertThrows(
+                NullPointerException.class,
+                () -> filmController.postFilm(new Film(1, null, "vvv", LocalDate.of(2023, 12, 12), 122)));
 
-        filmController.postFilm(film1);
-        filmController.postFilm(film2);
-        filmController.postFilm(film3);
-        filmController.postFilm(film4);
+        assertEquals("name is marked non-null but is null", nullPointerException.getMessage());
 
         exception = assertThrows(
                 ValidationException.class,
-                () -> filmController.postFilm(film5));
+                () -> filmController.postFilm(new Film(1, "", "vvv", LocalDate.of(2023, 12, 12), 122)));
+
+        assertEquals("Назване фильма не может быть пустым!", exception.getMessage());
+
+        exception = assertThrows(
+                ValidationException.class,
+                () -> filmController.postFilm(new Film(1, "", "vvv", LocalDate.of(2023, 12, 12), 122)));
+
+        assertEquals("Назване фильма не может быть пустым!", exception.getMessage());
+
+        exception = assertThrows(
+                ValidationException.class,
+                () -> filmController.postFilm(new Film(1, "Film", "", LocalDate.of(2023, 12, 12), 122)));
+
+        assertEquals("Описание фильма не может отсутствовать или превышать лимит в 200 символов!", exception.getMessage());
+
+        exception = assertThrows(
+                ValidationException.class,
+                () -> filmController.postFilm(new Film(1, "Film",
+                        "llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll",
+                        LocalDate.of(2023, 12, 12), 122)));
+
+        assertEquals("Описание фильма не может отсутствовать или превышать лимит в 200 символов!", exception.getMessage());
+
+        exception = assertThrows(
+                ValidationException.class,
+                () -> filmController.postFilm(new Film(1, "Film", "llll", LocalDate.of(1800, 12, 12), 122)));
 
         assertEquals("Фильм не мог быть выпущен до 28 декабря 1895!", exception.getMessage());
 
-        filmController.postFilm(film6);
+        exception = assertThrows(
+                ValidationException.class,
+                () -> filmController.postFilm(new Film(1, "Film", "llll", LocalDate.of(2022, 12, 12), -1)));
+
+        assertEquals("Продолжительность фильма не может быть отрицательной!", exception.getMessage());
     }
 }

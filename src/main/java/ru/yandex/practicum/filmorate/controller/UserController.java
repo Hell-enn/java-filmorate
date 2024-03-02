@@ -105,8 +105,12 @@ public class UserController {
 
         if (user == null)
             message = "Вы не передали информацию о пользователе!";
+        else if (user.getEmail().isEmpty())
+            message = "Поле 'почта' не должно быть пустым!";
         else if (!user.getEmail().contains("@"))
             message = "В указанном адресе электронной почты пользователя отсутствует символ @!";
+        else if (user.getLogin().isEmpty())
+            message = "Поле 'логин' не должно быть пустым!";
         else if (user.getLogin().contains(" "))
             message = "Логин содержит пробелы!";
         else if (user.getBirthday().isAfter(LocalDate.now()))

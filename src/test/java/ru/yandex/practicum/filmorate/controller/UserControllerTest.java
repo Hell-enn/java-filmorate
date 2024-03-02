@@ -72,6 +72,13 @@ public class UserControllerTest {
                 ValidationException.class,
                 () -> userController.postUser(user2));
 
+        assertEquals("Поле 'почта' не должно быть пустым!", exception.getMessage());
+
+        User user22 = new User(1, "zayatcsusami", "zayatcsusami", "Заяц Усатый", LocalDate.of(2020, 12, 12));
+        exception = assertThrows(
+                ValidationException.class,
+                () -> userController.postUser(user22));
+
         assertEquals("В указанном адресе электронной почты пользователя отсутствует символ @!", exception.getMessage());
 
 
@@ -80,24 +87,32 @@ public class UserControllerTest {
                 () -> userController.postUser(new User(1, null, "zayatcsusami", "Заяц Усатый", LocalDate.of(2020, 12, 12)))
         );
 
-        assertEquals("Cannot invoke \"String.contains(java.lang.CharSequence)\" because the return value of \"ru.yandex.practicum.filmorate.model.User.getEmail()\" is null", nullPointerException.getMessage());
+        assertEquals("email is marked non-null but is null", nullPointerException.getMessage());
 
 
-        User user3 = new User(1, "zayatcsusamizayatc.com", "zayatcsusami", "Заяц Усатый", LocalDate.of(2020, 12, 12));
+        User user3 = new User(1, "zayatcsusami@zayatc.com", "", "Заяц Усатый", LocalDate.of(2020, 12, 12));
 
         exception = assertThrows(
                 ValidationException.class,
                 () -> userController.postUser(user3));
 
-        assertEquals("В указанном адресе электронной почты пользователя отсутствует символ @!", exception.getMessage());
+        assertEquals("Поле 'логин' не должно быть пустым!", exception.getMessage());
 
 
-        User user5 = new User(1, "zayatcsusami@zayatc.com", "z ayatc susa mi", "Заяц Усатый", LocalDate.of(2020, 12, 12));
+        User user33 = new User(1, "zayatcsusami@zayatc.com", "zaya tcsusami", "Заяц Усатый", LocalDate.of(2020, 12, 12));
+
         exception = assertThrows(
                 ValidationException.class,
-                () -> userController.postUser(user5));
+                () -> userController.postUser(user33));
 
         assertEquals("Логин содержит пробелы!", exception.getMessage());
+
+
+        nullPointerException = assertThrows(
+                NullPointerException.class,
+                () -> userController.postUser(new User(1, "zayatcsusami@zayatc.com", null, "Заяц Усатый", LocalDate.of(2020, 12, 12))));
+
+        assertEquals("login is marked non-null but is null", nullPointerException.getMessage());
 
 
         User user6 = new User(1, "zayatcsusami@zayatc.com", "zayatcsusami", "Заяц Усатый", LocalDate.of(2025, 12, 12));
