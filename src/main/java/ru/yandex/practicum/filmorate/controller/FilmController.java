@@ -104,14 +104,8 @@ public class FilmController {
 
         if (film == null)
             message = "Вы не передали информацию о фильме!";
-        else if (film.getName().isEmpty())
-            message = "Назване фильма не может быть пустым!";
-        else if (film.getDescription().isEmpty() || film.getDescription().length() > 200)
-            message = "Описание фильма не может отсутствовать или превышать лимит в 200 символов!";
         else if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28)))
             message = "Фильм не мог быть выпущен до 28 декабря 1895!";
-        else if (film.getDuration() < 1)
-            message = "Продолжительность фильма не может быть отрицательной!";
 
         if (!message.isBlank()) {
             try {

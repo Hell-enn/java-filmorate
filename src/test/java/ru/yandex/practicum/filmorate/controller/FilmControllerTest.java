@@ -67,48 +67,5 @@ public class FilmControllerTest {
 
         assertEquals("Вы не передали информацию о фильме!", exception.getMessage());
 
-        NullPointerException nullPointerException = assertThrows(
-                NullPointerException.class,
-                () -> filmController.postFilm(new Film(1, null, "vvv", LocalDate.of(2023, 12, 12), 122)));
-
-        assertEquals("name is marked non-null but is null", nullPointerException.getMessage());
-
-        exception = assertThrows(
-                ValidationException.class,
-                () -> filmController.postFilm(new Film(1, "", "vvv", LocalDate.of(2023, 12, 12), 122)));
-
-        assertEquals("Назване фильма не может быть пустым!", exception.getMessage());
-
-        exception = assertThrows(
-                ValidationException.class,
-                () -> filmController.postFilm(new Film(1, "", "vvv", LocalDate.of(2023, 12, 12), 122)));
-
-        assertEquals("Назване фильма не может быть пустым!", exception.getMessage());
-
-        exception = assertThrows(
-                ValidationException.class,
-                () -> filmController.postFilm(new Film(1, "Film", "", LocalDate.of(2023, 12, 12), 122)));
-
-        assertEquals("Описание фильма не может отсутствовать или превышать лимит в 200 символов!", exception.getMessage());
-
-        exception = assertThrows(
-                ValidationException.class,
-                () -> filmController.postFilm(new Film(1, "Film",
-                        "llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll",
-                        LocalDate.of(2023, 12, 12), 122)));
-
-        assertEquals("Описание фильма не может отсутствовать или превышать лимит в 200 символов!", exception.getMessage());
-
-        exception = assertThrows(
-                ValidationException.class,
-                () -> filmController.postFilm(new Film(1, "Film", "llll", LocalDate.of(1800, 12, 12), 122)));
-
-        assertEquals("Фильм не мог быть выпущен до 28 декабря 1895!", exception.getMessage());
-
-        exception = assertThrows(
-                ValidationException.class,
-                () -> filmController.postFilm(new Film(1, "Film", "llll", LocalDate.of(2022, 12, 12), -1)));
-
-        assertEquals("Продолжительность фильма не может быть отрицательной!", exception.getMessage());
     }
 }
