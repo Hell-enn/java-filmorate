@@ -201,7 +201,7 @@ public class UserService {
         commonFriendsIds = new ArrayList<>(user1.getFriends());
         commonFriendsIds.retainAll(user2.getFriends());
 
-        for(Long id: commonFriendsIds) {
+        for (Long id: commonFriendsIds) {
             commonFriends.add(userStorage.getUser(Math.toIntExact(id)));
         }
 
