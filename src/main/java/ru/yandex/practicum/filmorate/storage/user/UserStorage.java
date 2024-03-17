@@ -10,11 +10,6 @@ import java.util.List;
  */
 public interface UserStorage {
 
-    /**
-     * Метод генерирует и возвращает идентификатор пользователя.
-     * @return
-     */
-    int getId();
 
     /**
      * Добавляет объект user в список.
@@ -27,17 +22,17 @@ public interface UserStorage {
      * Удаляет объект типа User с id из списка.
      * @param id
      */
-    void deleteUser(int id);
+    void deleteUser(long id);
 
 
-    User getUser(int id);
+    User getUser(long id);
 
     /**
      * Метод отвечает на вопрос, содержится ли пользователь с
      * данным id в списке.
      * @return
      */
-    boolean containsUser(int id);
+    boolean containsUser(long id);
 
     /**
      * Метод возвращает список пользователей.

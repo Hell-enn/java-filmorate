@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
@@ -15,7 +16,7 @@ import java.util.List;
  */
 
 @Slf4j
-@RestController()
+@RestController
 @RequiredArgsConstructor
 public class UserController {
 
@@ -69,7 +70,10 @@ public class UserController {
     @GetMapping("/users")
     public List<User> getUsers() {
 
-        return userService.getUsers();
+        List<User> users = userService.getUsers();
+        if (users != null)
+            log.debug("Возвращаем список из {} пользователей!", users.size());
+        return users;
 
     }
 
@@ -79,9 +83,12 @@ public class UserController {
      * @return
      */
     @GetMapping("/users/{id}")
-    public User getUser(@PathVariable int id) {
+    public User getUser(@PathVariable long id) {
 
-        return userService.getUser(id);
+        User user = userService.getUser(id);
+        if (user != null)
+            log.debug("Возвращаем пользователя с id = {}!", id);
+        return user;
 
     }
 
@@ -92,9 +99,10 @@ public class UserController {
      * @return
      */
     @PutMapping("/users/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable int id,
-                               @PathVariable int friendId) {
+    public User addFriend(@PathVariable long id,
+                               @PathVariable long friendId) {
 
+        log.debug("Пользователь с id = " + id + " добавляет в друзья пользователя с id = " + friendId + "!");
         return userService.addFriend(id, friendId);
 
     }
@@ -106,9 +114,10 @@ public class UserController {
      * @return
      */
     @DeleteMapping("/users/{id}/friends/{friendId}")
-    public User deleteFriend(@PathVariable int id,
-                          @PathVariable int friendId) {
+    public User deleteFriend(@PathVariable long id,
+                          @PathVariable long friendId) {
 
+        log.debug("Пользователь с id = " + id + " удаляет из друзей пользователя с id = " + friendId + "!");
         return userService.deleteFriend(id, friendId);
 
     }
@@ -119,8 +128,9 @@ public class UserController {
      * @return
      */
     @GetMapping("/users/{id}/friends")
-    public List<User> getFriends(@PathVariable int id) {
+    public List<User> getFriends(@PathVariable long id) {
 
+        log.debug("Возвращаем список друзей пользователя с id = " + id + "!");
         return userService.getFriends(id);
 
     }
@@ -132,9 +142,10 @@ public class UserController {
      * @return
      */
     @GetMapping("/users/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable int id,
-                                       @PathVariable int otherId) {
+    public List<User> getCommonFriends(@PathVariable long id,
+                                       @PathVariable long otherId) {
 
+        log.debug("Возвращаем список общих друзей пользователей с id = " + id + " и " + otherId + "!");
         return userService.getCommonFriends(id, otherId);
 
     }

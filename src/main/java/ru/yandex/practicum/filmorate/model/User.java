@@ -20,7 +20,7 @@ import java.util.*;
 @AllArgsConstructor
 public class User {
 
-    private int id;
+    private long id;
     @NotNull(message = "Поле email отсутствует!")
     @Email(message = "Неверный формат электронной почты!")
     private final String email;
@@ -31,7 +31,7 @@ public class User {
     @JsonFormat(pattern = "yyyy-MM-dd")
     @NotNull(message = "Поле birthday отсутствует!")
     private final LocalDate birthday;
-    private final Set<Long> friends = new HashSet<>();
+    private Set<Long> friends;
 
 
     public void addFriend(Long friendId) {

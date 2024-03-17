@@ -7,8 +7,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-
-import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -31,18 +29,15 @@ public class FilmService {
      * @param film
      * @return
      */
-    public Film postFilm(@Valid Film film) {
+    public Film postFilm(Film film) {
 
         validateFilm(film);
-
-        if (film.getId() == 0) {
-            film.setId(filmStorage.getId());
-        }
 
         if (filmStorage.containsFilm(film.getId())) {
             return null;
         }
 
+        //film.setLikes(new HashSet<>());
         filmStorage.addFilm(film);
         return film;
     }
@@ -54,7 +49,7 @@ public class FilmService {
      * @param film
      * @return
      */
-    public Film putFilm(@Valid Film film) {
+    public Film putFilm(Film film) {
 
         validateFilm(film);
 
@@ -108,14 +103,14 @@ public class FilmService {
      * @param userId
      * @param filmId
      */
-    public void addLike(int userId, int filmId) {
+    public void addLike(long userId, long filmId) {
 
         Film film = filmStorage.getFilm(filmId);
 
         if (film == null)
             throw new FilmNotFoundException("Фильм отсутствует в списке!");
 
-        film.addLike((long) userId);
+        film.addLike(userId);
     }
 
 
@@ -125,14 +120,15 @@ public class FilmService {
      * @param userId
      * @param filmId
      */
-    public void deleteLike(int userId, int filmId) {
+    public void deleteLike(long userId, long filmId) {
 
         Film film = filmStorage.getFilm(filmId);
 
         if (film == null)
             throw new FilmNotFoundException("Фильм отсутствует в списке!");
 
-        film.deleteLike((long) userId);
+        if (film.getLikes().contains(userId))
+            film.deleteLike(userId);
     }
 
 
@@ -141,11 +137,11 @@ public class FilmService {
      * фильмов.
      * @return
      */
-    public List<Film> getPopularFilms(int count) {
+    public List<Film> getPopularFilms(long count) {
 
         List<Film> sortedFilms = filmStorage.getFilms();
         sortedFilms.sort(Comparator.comparingInt(film -> -film.getLikes().size()));
-        return sortedFilms.subList(0, count);
+        return sortedFilms.subList(0, (int) count);
 
     }
 
@@ -155,7 +151,7 @@ public class FilmService {
      * @param id
      * @return
      */
-    public Film getFilm(int id) {
+    public Film getFilm(long id) {
 
         Film film = filmStorage.getFilm(id);
         if (film == null)

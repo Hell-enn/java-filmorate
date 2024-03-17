@@ -20,7 +20,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class Film {
 
-    private int id;
+    private long id;
     @NotNull(message = "Поле name отсутствует!")
     @Size(min = 1)
     private final String name;
@@ -31,6 +31,12 @@ public class Film {
     private final LocalDate releaseDate;
     @Min(1)
     private final int duration;
+    /**
+     * Попыталась по аналогии с User убрать инициализацию и
+     * перезаписывать в переменную likes объект типа HashSet
+     * при добавлении фильма, но Postman почему-то не пропускает
+     * такую логику
+     */
     private final Set<Long> likes = new HashSet<>();
 
     /**

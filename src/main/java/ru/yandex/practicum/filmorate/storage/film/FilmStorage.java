@@ -10,11 +10,6 @@ import java.util.List;
  */
 public interface FilmStorage {
 
-    /**
-     * Метод генерирует и возвращает идентификатор фильма.
-     * @return
-     */
-    int getId();
 
     /**
      * Добавляет объект film в список.
@@ -27,17 +22,17 @@ public interface FilmStorage {
      * Удаляет объект типа Film с id из списка.
      * @param id
      */
-    void deleteFilm(int id);
+    void deleteFilm(long id);
 
 
-    Film getFilm(int id);
+    Film getFilm(long id);
 
     /**
      * Метод отвечает на вопрос, содержится ли фильм с
      * данным id в списке.
      * @return
      */
-    boolean containsFilm(int id);
+    boolean containsFilm(long id);
 
     /**
      * Метод возвращает список фильмов.

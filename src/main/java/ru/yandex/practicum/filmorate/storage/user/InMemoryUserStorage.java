@@ -15,34 +15,45 @@ import java.util.Map;
  */
 @Component
 public class InMemoryUserStorage implements UserStorage {
-    private final Map<Integer, User> users = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
     private int id = 0;
 
-    public int getId() {
+    /**
+     * Метод генерирует и возвращает идентификатор пользователя.
+     * @return
+     */
+    private long getId() {
         return ++id;
     }
 
 
+    @Override
     public void addUser(User user) {
+        if (user.getId() <= 0)
+            user.setId(getId());
         users.put(user.getId(), user);
     }
 
 
-    public void deleteUser(int id) {
+    @Override
+    public void deleteUser(long id) {
         users.remove(id);
     }
 
 
-    public User getUser(int id) {
+    @Override
+    public User getUser(long id) {
         return users.get(id);
     }
 
 
-    public boolean containsUser(int id) {
+    @Override
+    public boolean containsUser(long id) {
         return users.containsKey(id);
     }
 
 
+    @Override
     public List<User> getUsers() {
         return new ArrayList<>(users.values());
     }

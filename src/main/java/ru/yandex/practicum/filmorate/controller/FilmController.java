@@ -15,7 +15,7 @@ import java.util.List;
  */
 
 @Slf4j
-@RestController()
+@RestController
 @RequiredArgsConstructor
 public class FilmController {
 
@@ -68,7 +68,10 @@ public class FilmController {
     @GetMapping("/films")
     public List<Film> getFilms() {
 
-        return filmService.getFilms();
+        List<Film> films = filmService.getFilms();
+        if (films != null)
+            log.debug("Возвращаем список из {} фильмов!", films.size());
+        return films;
 
     }
 
@@ -78,8 +81,11 @@ public class FilmController {
      * @return
      */
     @GetMapping("/films/{id}")
-    public Film getFilm(@PathVariable int id) {
+    public Film getFilm(@PathVariable long id) {
 
+        Film film = filmService.getFilm(id);
+        if (film != null)
+            log.debug("Возвращаем фильм \"{}\"!", film.getName());
         return filmService.getFilm(id);
 
     }
@@ -90,9 +96,10 @@ public class FilmController {
      * фильму с id.
      */
     @PutMapping("/films/{id}/like/{userId}")
-    public void addLike(@PathVariable int id,
-                        @PathVariable int userId) {
+    public void addLike(@PathVariable long id,
+                        @PathVariable long userId) {
 
+        log.debug("Пользователь с id = " + userId + " ставит лайк фильму с id = " + id + "!");
         filmService.addLike(userId, id);
 
     }
@@ -103,9 +110,10 @@ public class FilmController {
      * фильму с id.
      */
     @DeleteMapping("/films/{id}/like/{userId}")
-    public void deleteLike(@PathVariable int id,
-                        @PathVariable int userId) {
+    public void deleteLike(@PathVariable long id,
+                        @PathVariable long userId) {
 
+        log.debug("Пользователь с id = " + userId + " удаляет лайк с фильма с id = " + id + "!");
         filmService.deleteLike(userId, id);
 
     }
@@ -118,14 +126,16 @@ public class FilmController {
      * фильмов.
      */
     @GetMapping("/films/popular")
-    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") String count) {
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
 
-        int amount = Integer.parseInt(count);
         int filmsAmount = filmService.getFilms().size();
-        if (amount > filmsAmount)
+        if (count > filmsAmount) {
+            log.debug("Возвращаем список " + filmsAmount + " самых популярных фильмов!");
             return filmService.getPopularFilms(filmsAmount);
-        else
-            return filmService.getPopularFilms(amount);
-
+        }
+        else {
+            log.debug("Возвращаем список " + count + " самых популярных фильмов!");
+            return filmService.getPopularFilms(count);
+        }
     }
 }

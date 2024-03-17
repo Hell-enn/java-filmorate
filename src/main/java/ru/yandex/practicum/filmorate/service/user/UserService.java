@@ -7,9 +7,9 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -32,18 +32,15 @@ public class UserService {
      * @param user
      * @return
      */
-    public User postUser(@Valid User user) {
+    public User postUser(User user) {
 
         validateUser(user);
-
-        if (user.getId() == 0) {
-            user.setId(userStorage.getId());
-        }
 
         if (userStorage.containsUser(user.getId())) {
             return null;
         }
 
+        user.setFriends(new HashSet<>());
         userStorage.addUser(user);
         return user;
     }
@@ -57,7 +54,7 @@ public class UserService {
      * @param user
      * @return
      */
-    public User putUser(@Valid User user) {
+    public User putUser(User user) {
 
         validateUser(user);
 
@@ -113,7 +110,10 @@ public class UserService {
      * @param userFromId
      * @param userToId
      */
-    public User addFriend(int userFromId, int userToId) {
+    public User addFriend(long userFromId, long userToId) {
+
+        if (userToId == userFromId)
+            throw new IllegalArgumentException("Пользователь не может добавить в друзья сам себя!");
 
         User userFrom = userStorage.getUser(userFromId);
         User userTo = userStorage.getUser(userToId);
@@ -124,8 +124,8 @@ public class UserService {
         if (userTo == null)
             throw new UserNotFoundException("Пользователь " + userToId + " отсутствует в списке!");
 
-        userFrom.addFriend((long) userToId);
-        userTo.addFriend((long) userFromId);
+        userFrom.addFriend(userToId);
+        userTo.addFriend(userFromId);
 
         return userTo;
 
@@ -138,7 +138,7 @@ public class UserService {
      * @param userFromId
      * @param userToId
      */
-    public User deleteFriend(int userFromId, int userToId) {
+    public User deleteFriend(long userFromId, long userToId) {
 
         User userFrom = userStorage.getUser(userFromId);
         User userTo = userStorage.getUser(userToId);
@@ -149,8 +149,10 @@ public class UserService {
         if (userTo == null)
             throw new UserNotFoundException("Пользователь " + userToId + " отсутствует в списке!");
 
-        userFrom.deleteFriend((long) userToId);
-        userTo.deleteFriend((long) userFromId);
+        if (userFrom.getFriends().contains(userFromId)) {
+            userFrom.deleteFriend(userToId);
+            userTo.deleteFriend(userFromId);
+        }
 
         return userTo;
     }
@@ -161,7 +163,7 @@ public class UserService {
      * @param userId
      * @return
      */
-    public List<User> getFriends(int userId) {
+    public List<User> getFriends(long userId) {
 
         User user = userStorage.getUser(userId);
         if (user == null)
@@ -184,7 +186,7 @@ public class UserService {
      * @param user2Id
      * @return
      */
-    public List<User> getCommonFriends(int user1Id, int user2Id) {
+    public List<User> getCommonFriends(long user1Id, long user2Id) {
 
         List<Long> commonFriendsIds;
         List<User> commonFriends = new ArrayList<>();
@@ -214,7 +216,7 @@ public class UserService {
      * @param id
      * @return
      */
-    public User getUser(int id) {
+    public User getUser(long id) {
 
         User user = userStorage.getUser(id);
         if (user == null)

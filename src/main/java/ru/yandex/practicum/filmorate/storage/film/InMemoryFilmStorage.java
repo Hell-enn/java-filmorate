@@ -12,34 +12,45 @@ import java.util.*;
  */
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
     private int id = 0;
 
-    public int getId() {
+    /**
+     * Метод генерирует и возвращает идентификатор фильма.
+     * @return
+     */
+    private long getId() {
         return ++id;
     }
 
 
+    @Override
     public void addFilm(Film film) {
+        if (film.getId() <= 0)
+            film.setId(getId());
         films.put(film.getId(), film);
     }
 
 
-    public void deleteFilm(int id) {
+    @Override
+    public void deleteFilm(long id) {
         films.remove(id);
     }
 
 
-    public Film getFilm(int id) {
+    @Override
+    public Film getFilm(long id) {
         return films.get(id);
     }
 
 
-    public boolean containsFilm(int id) {
+    @Override
+    public boolean containsFilm(long id) {
         return films.containsKey(id);
     }
 
 
+    @Override
     public List<Film> getFilms() {
         return new ArrayList<>(films.values());
     }
