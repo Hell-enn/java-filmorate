@@ -132,8 +132,7 @@ public class FilmController {
         if (count > filmsAmount) {
             log.debug("Возвращаем список " + filmsAmount + " самых популярных фильмов!");
             return filmService.getPopularFilms(filmsAmount);
-        }
-        else {
+        } else {
             log.debug("Возвращаем список " + count + " самых популярных фильмов!");
             return filmService.getPopularFilms(count);
         }
