@@ -117,11 +117,15 @@ public class FilmController {
      * не был передан, возвращает список из 10 самых популярных
      * фильмов.
      */
-    @GetMapping("/films/popular?count={count}")
-    public List<Film> getPopularFilms(@RequestParam(required = false) int count) {
+    @GetMapping("/films/popular")
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") String count) {
 
-        int amount = count < 1 ? 10 : count;
-        return filmService.getPopularFilms(amount);
+        int amount = Integer.parseInt(count);
+        int filmsAmount = filmService.getFilms().size();
+        if (amount > filmsAmount)
+            return filmService.getPopularFilms(filmsAmount);
+        else
+            return filmService.getPopularFilms(amount);
 
     }
 }

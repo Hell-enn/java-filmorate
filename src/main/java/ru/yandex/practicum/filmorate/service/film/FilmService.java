@@ -144,7 +144,7 @@ public class FilmService {
     public List<Film> getPopularFilms(int count) {
 
         List<Film> sortedFilms = filmStorage.getFilms();
-        sortedFilms.sort(Comparator.comparingInt(film -> film.getLikes().size()));
+        sortedFilms.sort(Comparator.comparingInt(film -> -film.getLikes().size()));
         return sortedFilms.subList(0, count);
 
     }
