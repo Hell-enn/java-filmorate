@@ -1,15 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Класс UserController предоставляет ряд эндпоинтов для запросов
@@ -18,37 +16,30 @@ import java.util.Map;
 
 @Slf4j
 @RestController()
+@RequiredArgsConstructor
 public class UserController {
 
-    private final Map<Integer, User> users = new HashMap<>();
-    private int id = 0;
+    private final UserService userService;
 
 
     /**
-     * Эндпоинт. Метод добавляяет нового пользователя в список в случае,
-     * если он в нём отсутствует. Иначе выбрасывает исключение
-     * ValidateException с сообщением об ошибке.
-     * В случае успеха возвращает добавленный объект.
+     * Эндпоинт. Метод добавляяет нового пользователя в список  с
+     * помощью соответствующего метода интерфеса хранилища -
+     * UserStorage. В случае успеха возвращает добавленный объект.
      * @param user
      * @return
      */
     @PostMapping("/users")
     public User postUser(@Valid @RequestBody User user) {
 
-        validateUser(user);
+        User addedUser = userService.postUser(user);;
 
-        if (user.getId() == 0) {
-            user.setId(++id);
-        }
-
-        if (users.containsKey(user.getId())) {
+        if (addedUser == null) {
+            log.debug("Пользователь \"" + user.getName() + "\" уже содержится в списке!");
             return null;
         }
 
-        users.put(user.getId(), user);
-
         log.debug("Пользователь с логином {} добавлен!", user.getLogin());
-
         return user;
     }
 
@@ -64,17 +55,10 @@ public class UserController {
     @PutMapping("/users")
     public User putUser(@Valid @RequestBody User user) {
 
-        validateUser(user);
+        User addedUser = userService.putUser(user);;
 
-        if (!users.containsKey(user.getId())) {
-            throw new ValidationException("Пользователь отсутствует в списке!");
-        }
-
-        users.put(user.getId(), user);
-
-        log.debug("Пользователь с логином {} обновлён!", user.getLogin());
-
-        return user;
+        log.debug("Фильм \"{}\" обновлён!", user.getName());
+        return addedUser;
     }
 
 
@@ -85,38 +69,73 @@ public class UserController {
     @GetMapping("/users")
     public List<User> getUsers() {
 
-        return new ArrayList<>(users.values());
+        return userService.getUsers();
 
     }
 
 
     /**
-     * Закрытый служебный метод проверяет объект типа User
-     * на соответствие ряду условий. Используется впоследствие
-     * для валидации объекта типа User при попытке его добавления
-     * или обновления в списке.
-     * В случае неудачи выбрасывает исключение ValidationException
-     * с сообщением об ошибке.
-     * @param user
+     * Эндпоинт. Метод возвращает объект пользователя по его id.
+     * @return
      */
-    private void validateUser(User user) {
+    @GetMapping("/users/{id}")
+    public User getUser(@PathVariable int id) {
 
-        String message = "";
+        return userService.getUser(id);
 
-        if (user == null)
-            message = "Вы не передали информацию о пользователе!";
-        else if (user.getBirthday().isAfter(LocalDate.now()))
-            message = "Неверно указана дата рождения!";
-        else if (user.getName() == null || user.getName().isBlank())
-            user.setName(user.getLogin());
+    }
 
 
-        if (!message.isBlank()) {
-            try {
-                throw new ValidationException(message);
-            } finally {
-                log.debug(message);
-            }
-        }
+    /**
+     * Эндпоинт. Метод добавляет в друзья пользователя с friendId
+     * пользователю с id и наоборот.
+     * @return
+     */
+    @PutMapping("/users/{id}/friends/{friendId}")
+    public User addFriend(@PathVariable int id,
+                               @PathVariable int friendId) {
+
+        return userService.addFriend(id, friendId);
+
+    }
+
+
+    /**
+     * Эндпоинт. Метод удаляет из друзей пользователя с friendId
+     * у пользователя с id и наоборот.
+     * @return
+     */
+    @DeleteMapping("/users/{id}/friends/{friendId}")
+    public User deleteFriend(@PathVariable int id,
+                          @PathVariable int friendId) {
+
+        return userService.deleteFriend(id, friendId);
+
+    }
+
+
+    /**
+     * Эндпоинт. Метод возвращает список друзей пользователя с id.
+     * @return
+     */
+    @GetMapping("/users/{id}/friends")
+    public List<User> getFriends(@PathVariable int id) {
+
+        return userService.getFriends(id);
+
+    }
+
+
+    /**
+     * Эндпоинт. Метод возвращает список общих друзей двух
+     * пользователей - с id и otherId.
+     * @return
+     */
+    @GetMapping("/users/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable int id,
+                                       @PathVariable int otherId) {
+
+        return userService.getCommonFriends(id, otherId);
+
     }
 }

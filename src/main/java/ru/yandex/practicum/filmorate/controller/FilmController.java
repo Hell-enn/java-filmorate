@@ -1,15 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Класс FilmController предоставляет ряд эндпоинтов для запросов
@@ -18,62 +16,48 @@ import java.util.Map;
 
 @Slf4j
 @RestController()
+@RequiredArgsConstructor
 public class FilmController {
 
-    private final Map<Integer, Film> films = new HashMap<>();
-    private int id = 0;
+    private final FilmService filmService;
 
 
     /**
-     * Эндпоинт. Метод добавляяет новый фильм в список в случае,
-     * если он в нём отсутствует. Иначе выбрасывает исключение
-     * ValidateException с сообщением об ошибке.
-     * В случае успеха возвращает добавленный объект.
+     * Эндпоинт. Метод добавляяет новый фильм в список с
+     * помощью соответствующего метода интерфеса хранилища -
+     * FilmStorage. В случае успеха возвращает добавленный объект.
      * @param film
      * @return
      */
     @PostMapping("/films")
     public Film postFilm(@Valid @RequestBody Film film) {
 
-        validateFilm(film);
+        Film addedFilm = filmService.postFilm(film);
 
-        if (film.getId() == 0) {
-            film.setId(++id);
-        }
-
-        if (films.containsKey(film.getId())) {
+        if (addedFilm == null) {
+            log.debug("Фильм \"" + film.getName() + "\" уже содержится в списке!");
             return null;
         }
 
-        films.put(film.getId(), film);
-
         log.debug("Фильм \"{}\" добавлен!", film.getName());
-
         return film;
     }
 
 
     /**
-     * Эндпоинт. Метод обновляет фильм в списке в случае,
-     * если он в нём присутствует. Иначе выбрасывает исключение
-     * ValidateException с сообщением об ошибке.
-     * В случае успеха возвращает обновлённый объект.
+     * Эндпоинт. Метод обновляет фильм в списке с
+     * помощью соответствующего метода интерфеса хранилища -
+     * FilmStorage. В случае успеха возвращает обновлённый объект.
      * @param film
      * @return
      */
     @PutMapping("/films")
     public Film putFilm(@Valid @RequestBody Film film) {
 
-        validateFilm(film);
+        Film addedFilm = filmService.putFilm(film);
 
-        if (!films.containsKey(film.getId())) {
-            throw new ValidationException("Фильм отсутствует в списке!");
-        }
-
-        films.put(film.getId(), film);
         log.debug("Фильм \"{}\" обновлён!", film.getName());
-
-        return film;
+        return addedFilm;
     }
 
 
@@ -84,35 +68,60 @@ public class FilmController {
     @GetMapping("/films")
     public List<Film> getFilms() {
 
-        return new ArrayList<>(films.values());
+        return filmService.getFilms();
 
     }
 
 
     /**
-     * Закрытый служебный метод проверяет объект типа Film
-     * на соответствие ряду условий. Используется впоследствие
-     * для валидации объекта типа Film при попытке его добавления
-     * или обновления в списке.
-     * В случае неудачи выбрасывает исключение ValidationException
-     * с сообщением об ошибке.
-     * @param film
+     * Эндпоинт. Метод возвращает объект фильма по его id.
+     * @return
      */
-    private void validateFilm(Film film) {
+    @GetMapping("/films/{id}")
+    public Film getFilm(@PathVariable int id) {
 
-        String message = "";
+        return filmService.getFilm(id);
 
-        if (film == null)
-            message = "Вы не передали информацию о фильме!";
-        else if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28)))
-            message = "Фильм не мог быть выпущен до 28 декабря 1895!";
+    }
 
-        if (!message.isBlank()) {
-            try {
-                throw new ValidationException(message);
-            } finally {
-                log.debug(message);
-            }
-        }
+
+    /**
+     * Эндпоинт. Добавляет лайк пользователя с userId
+     * фильму с id.
+     */
+    @PutMapping("/films/{id}/like/{userId}")
+    public void addLike(@PathVariable int id,
+                        @PathVariable int userId) {
+
+        filmService.addLike(userId, id);
+
+    }
+
+
+    /**
+     * Эндпоинт. Удаляет лайк пользователя с userId
+     * фильму с id.
+     */
+    @DeleteMapping("/films/{id}/like/{userId}")
+    public void deleteLike(@PathVariable int id,
+                        @PathVariable int userId) {
+
+        filmService.deleteLike(userId, id);
+
+    }
+
+
+    /**
+     * Эндпоинт. Возвращает список самых популярных фильмов в
+     * количестве amount. Если в строке запроса данный параметр
+     * не был передан, возвращает список из 10 самых популярных
+     * фильмов.
+     */
+    @GetMapping("/films/popular?count={count}")
+    public List<Film> getPopularFilms(@RequestParam(required = false) int count) {
+
+        int amount = count < 1 ? 10 : count;
+        return filmService.getPopularFilms(amount);
+
     }
 }
