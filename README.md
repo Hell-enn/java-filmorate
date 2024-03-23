@@ -213,11 +213,11 @@ FROM
 FROM 
 ((SELECT followed_user_id 
  FROM friendship 
- WHERE following_user_id = 3)
+ WHERE following_user_id = 3 AND following_user_accept = true AND followed_user_accept = true)
 	UNION
 (SELECT following_user_id 
  FROM friendship 
- WHERE followed_user_id = 3)) AS friends_ids 
+ WHERE followed_user_id = 3 AND following_user_accept = true AND followed_user_accept = true)) AS friends_ids 
  LEFT JOIN users AS u ON u.user_id = friends_ids.followed_user_id)
  
  INTERSECT 
@@ -226,11 +226,11 @@ FROM
 FROM 
 ((SELECT followed_user_id 
  FROM friendship 
- WHERE following_user_id = 1)
+ WHERE following_user_id = 1 AND following_user_accept = true AND followed_user_accept = true)
 	UNION
 (SELECT following_user_id 
  FROM friendship 
- WHERE followed_user_id = 1)) AS friends_ids 
+ WHERE followed_user_id = 1 AND following_user_accept = true AND followed_user_accept = true)) AS friends_ids 
  LEFT JOIN users AS u ON u.user_id = friends_ids.followed_user_id)) AS common_friends
  LEFT JOIN users as u2 ON common_friends.user_id = u2.user_id;
 ```
