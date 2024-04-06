@@ -29,8 +29,8 @@ public class FilmDbStorage implements FilmStorage {
     private final Logger log = LoggerFactory.getLogger(FilmDbStorage.class);
     private final JdbcTemplate jdbcTemplate;
 
-    public FilmDbStorage(JdbcTemplate jdbcTemplate){
-        this.jdbcTemplate=jdbcTemplate;
+    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
 
@@ -198,7 +198,7 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM film " +
                 "WHERE film_id = ?", id);
 
-        if(filmRows.next()) {
+        if (filmRows.next()) {
             return getFilmFromSqlRow(filmRows);
         } else {
             log.info("Фильм с идентификатором {} не найден.", id);

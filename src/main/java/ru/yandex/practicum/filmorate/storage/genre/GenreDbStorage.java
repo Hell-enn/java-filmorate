@@ -22,8 +22,8 @@ public class GenreDbStorage implements GenreStorage {
     private final Logger log = LoggerFactory.getLogger(GenreDbStorage.class);
     private final JdbcTemplate jdbcTemplate;
 
-    public GenreDbStorage(JdbcTemplate jdbcTemplate){
-        this.jdbcTemplate=jdbcTemplate;
+    public GenreDbStorage(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
 
