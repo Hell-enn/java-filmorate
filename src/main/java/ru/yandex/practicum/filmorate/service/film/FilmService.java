@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -12,15 +12,15 @@ import java.util.*;
 
 /**
  * Класс FilmService предоставляет функциональность по
- * взаимодействию со списком лайков у объектов типа Film
- * (добавление, удаление, вывод набора 10 наиболее популярных
- * фильмов).
+ * взаимодействию со списком фильмов и их лайков у объектов типа Film
+ * (добавление, удаление, вывод фильмов и набора 10 наиболее популярных
+ * фильмов, лайков).
  */
 @Service
 @RequiredArgsConstructor
 public class FilmService {
 
-    private final FilmStorage filmStorage;
+    private final FilmStorage filmDbStorage;
 
 
     /**
@@ -33,13 +33,11 @@ public class FilmService {
 
         validateFilm(film);
 
-        if (filmStorage.containsFilm(film.getId())) {
+        if (filmDbStorage.containsFilm(film.getId())) {
             return null;
         }
 
-        //film.setLikes(new HashSet<>());
-        filmStorage.addFilm(film);
-        return film;
+        return filmDbStorage.addFilm(film);
     }
 
 
@@ -51,14 +49,8 @@ public class FilmService {
      */
     public Film putFilm(Film film) {
 
-        validateFilm(film);
+        return filmDbStorage.updateFilm(film);
 
-        if (!filmStorage.containsFilm(film.getId())) {
-            throw new FilmNotFoundException("Фильм отсутствует в списке!");
-        }
-
-        filmStorage.addFilm(film);
-        return film;
     }
 
 
@@ -68,7 +60,7 @@ public class FilmService {
      */
     public List<Film> getFilms() {
 
-        return filmStorage.getFilms();
+        return filmDbStorage.getFilms();
 
     }
 
@@ -105,12 +97,12 @@ public class FilmService {
      */
     public void addLike(long userId, long filmId) {
 
-        Film film = filmStorage.getFilm(filmId);
+        Film film = filmDbStorage.getFilm(filmId);
 
         if (film == null)
-            throw new FilmNotFoundException("Фильм отсутствует в списке!");
+            throw new NotFoundException("Фильм отсутствует в списке!");
 
-        film.addLike(userId);
+        filmDbStorage.addLike(filmId, userId);
     }
 
 
@@ -122,13 +114,13 @@ public class FilmService {
      */
     public void deleteLike(long userId, long filmId) {
 
-        Film film = filmStorage.getFilm(filmId);
+        Film film = filmDbStorage.getFilm(filmId);
 
         if (film == null)
-            throw new FilmNotFoundException("Фильм отсутствует в списке!");
+            throw new NotFoundException("Фильм отсутствует в списке!");
 
-        if (film.getLikes().contains(userId))
-            film.deleteLike(userId);
+        if (filmDbStorage.getLikes((int) filmId).contains(userId))
+            filmDbStorage.deleteLike(filmId, userId);
     }
 
 
@@ -139,8 +131,8 @@ public class FilmService {
      */
     public List<Film> getPopularFilms(long count) {
 
-        List<Film> sortedFilms = filmStorage.getFilms();
-        sortedFilms.sort(Comparator.comparingInt(film -> -film.getLikes().size()));
+        List<Film> sortedFilms = filmDbStorage.getFilms();
+        sortedFilms.sort(Comparator.comparingInt(film -> -filmDbStorage.getLikes((int) film.getId()).size()));
         return sortedFilms.subList(0, (int) count);
 
     }
@@ -153,11 +145,11 @@ public class FilmService {
      */
     public Film getFilm(long id) {
 
-        Film film = filmStorage.getFilm(id);
+        Film film = filmDbStorage.getFilm(id);
         if (film == null)
-            throw new FilmNotFoundException("Фильм отсутствует в списке!");
+            throw new NotFoundException("Фильм отсутствует в списке!");
 
-        return filmStorage.getFilm(id);
+        return film;
 
     }
 }

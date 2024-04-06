@@ -1,7 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Like;
+
 import java.util.List;
+import java.util.Set;
 
 /**
  * Интерфейс FilmStorage является контрактом для конкретных
@@ -10,12 +14,18 @@ import java.util.List;
  */
 public interface FilmStorage {
 
-
     /**
      * Добавляет объект film в список.
      * @param film
      */
-    void addFilm(Film film);
+    Film addFilm(Film film);
+
+
+    /**
+     * Обновляет объект film в списке.
+     * @param film
+     */
+    Film updateFilm(Film film);
 
 
     /**
@@ -25,7 +35,13 @@ public interface FilmStorage {
     void deleteFilm(long id);
 
 
+    /**
+     * Метод возвращает из хранилища объект фильма.
+     * @param id
+     * @return
+     */
     Film getFilm(long id);
+
 
     /**
      * Метод отвечает на вопрос, содержится ли фильм с
@@ -34,10 +50,43 @@ public interface FilmStorage {
      */
     boolean containsFilm(long id);
 
+
     /**
      * Метод возвращает список фильмов.
      * @return
      */
     List<Film> getFilms();
+
+
+    /**
+     * Метод добавляет id пользователя в перечень лайков, если он оценил данный фильм.
+     * @param userId
+     * @return
+     */
+    Long addLike(Long filmId, Long userId);
+
+
+    /**
+     * Метод удаляет id пользователя из перечня лайков.
+     * @param userId
+     * @return
+     */
+    Long deleteLike(Long filmId, Long userId);
+
+
+    /**
+     * Метод возвращает список список лайков фильма с filmId.
+     * @param filmId
+     * @return
+     */
+    Set<Like> getLikes(int filmId);
+
+
+    /**
+     * Метод возвращает список объектов жанров фильма с filmId.
+     * @param filmId
+     * @return
+     */
+    Set<Genre> getFilmGenres(int filmId);
 
 }

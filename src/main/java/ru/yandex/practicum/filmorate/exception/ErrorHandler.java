@@ -1,10 +1,13 @@
 package ru.yandex.practicum.filmorate.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.controller.FilmController;
+import ru.yandex.practicum.filmorate.controller.GenreController;
+import ru.yandex.practicum.filmorate.controller.RatingController;
 import ru.yandex.practicum.filmorate.controller.UserController;
 
 import java.util.Map;
@@ -15,20 +18,20 @@ import java.util.Map;
  * кода ответа на клиентскую сторону с детальным описанием
  * причин возникшей проблемы.
  */
-@RestControllerAdvice(assignableTypes = {FilmController.class, UserController.class})
+@RestControllerAdvice(assignableTypes = {FilmController.class, UserController.class, GenreController.class, RatingController.class})
 public class ErrorHandler {
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleFilmNotFound(final FilmNotFoundException e) {
-        return Map.of("Фильм не найден", e.getMessage());
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleBadRequest(final BadRequestException e) {
+        return Map.of("Ошибка в запросе", e.getMessage());
     }
 
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleUserNotFound(final UserNotFoundException e) {
-        return Map.of("Пользователь не найден", e.getMessage());
+    public Map<String, String> handleNotFound(final NotFoundException e) {
+        return Map.of("Объект не найден", e.getMessage());
     }
 
 
@@ -40,9 +43,15 @@ public class ErrorHandler {
 
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String>  handleSpringValidation(MethodArgumentNotValidException e) {
+        return Map.of("Объект-аргумент не отвечает заявленным требованиям", e.getMessage());
+    }
+
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleAnyError(final Throwable e) {
         return Map.of("Ошибка на сервере", e.getMessage());
     }
-
 }

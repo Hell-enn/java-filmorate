@@ -13,7 +13,6 @@ import java.util.List;
  * Класс UserController предоставляет ряд эндпоинтов для запросов
  * с клиентской части приложения к разделу с пользователями.
  */
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -23,7 +22,7 @@ public class UserController {
 
 
     /**
-     * Эндпоинт. Метод добавляяет нового пользователя в список  с
+     * Эндпоинт. Метод добавляет нового пользователя в список с
      * помощью соответствующего метода интерфеса хранилища -
      * UserStorage. В случае успеха возвращает добавленный объект.
      * @param user
@@ -32,7 +31,7 @@ public class UserController {
     @PostMapping("/users")
     public User postUser(@Valid @RequestBody User user) {
 
-        User addedUser = userService.postUser(user);;
+        User addedUser = userService.postUser(user);
 
         if (addedUser == null) {
             log.debug("Пользователь \"" + user.getName() + "\" уже содержится в списке!");
@@ -55,7 +54,7 @@ public class UserController {
     @PutMapping("/users")
     public User putUser(@Valid @RequestBody User user) {
 
-        User addedUser = userService.putUser(user);;
+        User addedUser = userService.putUser(user);
 
         log.debug("Фильм \"{}\" обновлён!", user.getName());
         return addedUser;
@@ -101,7 +100,6 @@ public class UserController {
     public User addFriend(@PathVariable long id,
                                @PathVariable long friendId) {
 
-        log.debug("Пользователь с id = " + id + " добавляет в друзья пользователя с id = " + friendId + "!");
         return userService.addFriend(id, friendId);
 
     }
@@ -113,11 +111,11 @@ public class UserController {
      * @return
      */
     @DeleteMapping("/users/{id}/friends/{friendId}")
-    public User deleteFriend(@PathVariable long id,
+    public void deleteFriend(@PathVariable long id,
                           @PathVariable long friendId) {
 
         log.debug("Пользователь с id = " + id + " удаляет из друзей пользователя с id = " + friendId + "!");
-        return userService.deleteFriend(id, friendId);
+        userService.deleteFriend(id, friendId);
 
     }
 
@@ -144,7 +142,6 @@ public class UserController {
     public List<User> getCommonFriends(@PathVariable long id,
                                        @PathVariable long otherId) {
 
-        log.debug("Возвращаем список общих друзей пользователей с id = " + id + " и " + otherId + "!");
         return userService.getCommonFriends(id, otherId);
 
     }
