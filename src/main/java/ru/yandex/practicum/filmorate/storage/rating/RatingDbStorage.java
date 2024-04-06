@@ -23,8 +23,8 @@ public class RatingDbStorage implements RatingStorage {
     private final Logger log = LoggerFactory.getLogger(RatingDbStorage.class);
     private final JdbcTemplate jdbcTemplate;
 
-    public RatingDbStorage(JdbcTemplate jdbcTemplate){
-        this.jdbcTemplate=jdbcTemplate;
+    public RatingDbStorage(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
 
@@ -66,7 +66,7 @@ public class RatingDbStorage implements RatingStorage {
                 "FROM rating " +
                 "WHERE rating_id = ?", id);
 
-        if(ratingRows.next()) {
+        if (ratingRows.next()) {
             return getRatingFromSqlRow(ratingRows);
         } else {
             log.info("Рейтинг с идентификатором {} не найден.", id);
