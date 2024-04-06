@@ -25,8 +25,8 @@ public class UserDbStorage implements UserStorage {
     private final Logger log = LoggerFactory.getLogger(UserDbStorage.class);
     private final JdbcTemplate jdbcTemplate;
 
-    public UserDbStorage(JdbcTemplate jdbcTemplate){
-        this.jdbcTemplate=jdbcTemplate;
+    public UserDbStorage(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
 
@@ -124,7 +124,7 @@ public class UserDbStorage implements UserStorage {
                 "FROM users " +
                 "WHERE user_id = ?", id);
 
-        if(userRows.next()) {
+        if (userRows.next()) {
             return getUserFromSqlRow(userRows);
         } else {
             log.info("Пользователь с идентификатором {} не найден.", id);
@@ -223,7 +223,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void deleteFriend(Long followingFriendId, Long followedFriendId){
+    public void deleteFriend(Long followingFriendId, Long followedFriendId) {
 
         if (!containsUser(followingFriendId) || !containsUser(followedFriendId)) {
             throw new NotFoundException("Пользователь не найден!");
