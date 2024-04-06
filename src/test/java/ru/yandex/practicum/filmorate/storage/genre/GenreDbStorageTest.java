@@ -73,12 +73,12 @@ public class GenreDbStorageTest {
     @Test
     public void getGenresTest() {
 
-        Genre oldGenre1 = new Genre(1L, "комедия");
-        Genre oldGenre2 = new Genre(2L, "драма");
-        Genre oldGenre3 = new Genre(3L, "мультфильм");
-        Genre oldGenre4 = new Genre(4L, "триллер");
-        Genre oldGenre5 = new Genre(5L, "документальный фильм");
-        Genre oldGenre6 = new Genre(6L, "боевик");
+        Genre oldGenre1 = new Genre(1L, "Комедия");
+        Genre oldGenre2 = new Genre(2L, "Драма");
+        Genre oldGenre3 = new Genre(3L, "Мультфильм");
+        Genre oldGenre4 = new Genre(4L, "Триллер");
+        Genre oldGenre5 = new Genre(5L, "Документальный");
+        Genre oldGenre6 = new Genre(6L, "Боевик");
 
         Genre newGenre1 = new Genre(7L, "Жанр 1");
         Genre newGenre2 = new Genre(8L, "Жанр 2");
