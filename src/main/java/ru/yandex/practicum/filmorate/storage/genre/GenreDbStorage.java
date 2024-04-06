@@ -65,7 +65,7 @@ public class GenreDbStorage implements GenreStorage {
                 "FROM genre " +
                 "WHERE genre_id = ?", id);
 
-        if(genreRows.next()) {
+        if (genreRows.next()) {
             log.info("Жанр с идентификатором {} найден.", id);
             return getGenreFromSqlRow(genreRows);
         } else {
