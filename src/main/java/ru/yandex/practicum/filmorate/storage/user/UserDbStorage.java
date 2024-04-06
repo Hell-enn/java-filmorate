@@ -263,7 +263,7 @@ public class UserDbStorage implements UserStorage {
 
 
     @Override
-    public List<User> getFriends(Long userId){
+    public List<User> getFriends(Long userId) {
 
         List<User> friends = new ArrayList<>();
 
