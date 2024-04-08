@@ -28,7 +28,7 @@ public class GenreDbStorage implements GenreStorage {
 
 
     @Override
-    public void addGenre(Genre genre) {
+    public Genre addGenre(Genre genre) {
 
         String insertGenreQuery = "INSERT INTO genre (name) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -42,6 +42,7 @@ public class GenreDbStorage implements GenreStorage {
         genre.setId(keyHolder.getKey().longValue());
 
         log.info("Жанр {} добавлен!", genre.getName());
+        return genre;
 
     }
 

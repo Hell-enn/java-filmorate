@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.genre;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,18 +24,13 @@ public class GenreDbStorageTest {
         genreStorage = new GenreDbStorage(jdbcTemplate);
     }
 
-    @AfterEach
-    public void createContextAfter() {
-        jdbcTemplate.update("TRUNCATE TABLE genre RESTART IDENTITY");
-    }
-
     @Test
     public void findGenreByIdTest() {
 
-        Genre newGenre = new Genre(1L, "Жанр 1");
+        Genre newGenre = new Genre(7L, "Жанр 7");
+        newGenre.setId(genreStorage.addGenre(newGenre).getId());
 
-        genreStorage.addGenre(newGenre);
-        Genre savedGenre = genreStorage.getGenre(1);
+        Genre savedGenre = genreStorage.getGenre(newGenre.getId());
 
         assertThat(savedGenre)
                 .isNotNull()
@@ -48,12 +42,12 @@ public class GenreDbStorageTest {
     @Test
     public void deleteGenreTest() {
 
-        Genre newGenre = new Genre(1L, "Жанр 1");
+        Genre newGenre = new Genre(7L, "Жанр 7");
 
         genreStorage.addGenre(newGenre);
-        genreStorage.deleteGenre(1);
+        genreStorage.deleteGenre(7);
 
-        assertThat(genreStorage.getGenre(1))
+        assertThat(genreStorage.getGenre(7))
                 .isNull();
     }
 
@@ -61,11 +55,10 @@ public class GenreDbStorageTest {
     @Test
     public void containsGenreTest() {
 
-        Genre newGenre = new Genre(1L, "Жанр 1");
+        Genre newGenre = new Genre(7L, "Жанр 7");
+        newGenre.setId(genreStorage.addGenre(newGenre).getId());
 
-        genreStorage.addGenre(newGenre);
-
-        assertThat(genreStorage.containsGenre(1))
+        assertThat(genreStorage.containsGenre(newGenre.getId()))
                 .isTrue();
     }
 

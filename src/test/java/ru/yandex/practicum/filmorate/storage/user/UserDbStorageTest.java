@@ -60,10 +60,10 @@ class UserDbStorageTest {
 
     @Test
     public void containsUserTest() {
-        User newUser = new User(1L, "user@email.ru", "vanya123", "Ivan Petrov", LocalDate.of(1990, 1, 1));
+        User newUser = new User(6L, "user@email.ru", "vanya123", "Ivan Petrov", LocalDate.of(1990, 1, 1));
         userStorage.addUser(newUser);
 
-        assertThat(userStorage.containsUser(1))
+        assertThat(userStorage.containsUser(6))
                 .isTrue();
     }
 

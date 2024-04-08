@@ -48,8 +48,8 @@ ADD UNIQUE (login);
 
 
 CREATE TABLE IF NOT EXISTS genre_film (
-    film_id INTEGER REFERENCES film(film_id),
-    genre_id INTEGER REFERENCES genre(genre_id),
+    film_id INTEGER REFERENCES film(film_id) ON DELETE CASCADE,
+    genre_id INTEGER REFERENCES genre(genre_id) ON DELETE CASCADE,
     PRIMARY KEY (film_id, genre_id)
 );
 
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS genre_film (
 
 CREATE TABLE IF NOT EXISTS rating_film (
     film_id INTEGER PRIMARY KEY,
-    rating_id INTEGER REFERENCES rating(rating_id)
+    rating_id INTEGER REFERENCES rating(rating_id) ON DELETE CASCADE
 );
 
 

@@ -15,7 +15,7 @@ public interface GenreStorage {
      * Добавляет объект genre в список.
      * @param genre
      */
-    void addGenre(Genre genre);
+    Genre addGenre(Genre genre);
 
 
     /**
