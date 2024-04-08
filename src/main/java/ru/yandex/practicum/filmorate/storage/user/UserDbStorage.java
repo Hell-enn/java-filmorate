@@ -86,8 +86,7 @@ public class UserDbStorage implements UserStorage {
                             "WHERE user_id = ?;";
                     jdbcTemplate.update(loginQuery, user.getLogin(), user.getId());
                 }
-            }
-            else {
+            } else {
                 loginQuery = "UPDATE users " +
                         "SET login = NULL " +
                         "WHERE user_id = ?;";
