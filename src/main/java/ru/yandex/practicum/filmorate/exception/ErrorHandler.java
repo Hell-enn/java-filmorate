@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,6 +21,12 @@ import java.util.Map;
  */
 @RestControllerAdvice(assignableTypes = {FilmController.class, UserController.class, GenreController.class, RatingController.class})
 public class ErrorHandler {
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleAlreadyExists(final AlreadyExistsException e) {
+        return Map.of("Объект уже существует", e.getMessage());
+    }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -46,6 +53,13 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String>  handleSpringValidation(MethodArgumentNotValidException e) {
         return Map.of("Объект-аргумент не отвечает заявленным требованиям", e.getMessage());
+    }
+
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String>  handleSqlException(DataIntegrityViolationException e) {
+        return Map.of("Ошибка при добавлении объекта в базу данных", e.getMessage());
     }
 
 

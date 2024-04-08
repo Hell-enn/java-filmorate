@@ -7,6 +7,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -32,6 +34,10 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User addUser(User user) {
+
+        if (containsUser(user.getId())) {
+            throw new AlreadyExistsException("Пользователь уже существует!");
+        }
 
         String insertUserQuery =
                 "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
@@ -80,7 +86,8 @@ public class UserDbStorage implements UserStorage {
                             "WHERE user_id = ?;";
                     jdbcTemplate.update(loginQuery, user.getLogin(), user.getId());
                 }
-            } else {
+            }
+            else {
                 loginQuery = "UPDATE users " +
                         "SET login = NULL " +
                         "WHERE user_id = ?;";
@@ -136,7 +143,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public boolean containsUser(long id) {
-        return jdbcTemplate.queryForRowSet("SELECT user_id FROM users WHERE user_id = ?", id).next();
+        return jdbcTemplate.queryForRowSet("SELECT * FROM users WHERE user_id = ?", id).next();
     }
 
 
@@ -189,6 +196,10 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User addFriend(Long followingFriendId, Long followedFriendId) {
 
+        if (followedFriendId.equals(followingFriendId)) {
+            throw new BadRequestException("Нельзя добавить в друзья самого себя!");
+        }
+
         String friendshipQuery = "SELECT * " +
                                  "FROM friendship " +
                                  "WHERE following_user_id = ? AND followed_user_id = ?";
@@ -196,25 +207,40 @@ public class UserDbStorage implements UserStorage {
         SqlRowSet followingFriendRows = jdbcTemplate.queryForRowSet(friendshipQuery, followingFriendId, followedFriendId);
         SqlRowSet followedFriendRows = jdbcTemplate.queryForRowSet(friendshipQuery, followedFriendId, followingFriendId);
 
-        if (!followingFriendRows.next() && !followedFriendRows.next()) {
+        boolean isFollowingRowPresent = followingFriendRows.next();
+        boolean isFollowedRowPresent = followedFriendRows.next();
+        if (!isFollowingRowPresent && !isFollowedRowPresent) {
 
             jdbcTemplate.update(
                     "INSERT INTO friendship (following_user_id, followed_user_id) VALUES (?, ?)",
                     followingFriendId, followedFriendId);
             log.info("Заявка на добавление в друзья от пользователя с id {} отправлена пользователю с id {}!", followingFriendId, followedFriendId);
 
-        } else if (!followingFriendRows.next()) {
+        } else if (!isFollowingRowPresent) {
 
-            jdbcTemplate.update(
-                    "UPDATE friendship SET accept = true WHERE following_user_id = ? AND followed_user_id = ?",
-                    followingFriendId, followedFriendId);
-            log.info("Заявка на добавление в друзья от пользователя с id {} одобрена пользователем с id {}!", followedFriendId, followingFriendId);
+            SqlRowSet followedFriendRows2 = jdbcTemplate.queryForRowSet(friendshipQuery, followedFriendId, followingFriendId);
 
-        } else if (!followedFriendRows.next()) {
+            if (followedFriendRows2.next()) {
+                if (followedFriendRows2.getBoolean("accept"))
+                    throw new AlreadyExistsException("Данные пользователь уже в списке Ваших друзей!");
+            }
 
             jdbcTemplate.update(
                     "UPDATE friendship SET accept = true WHERE following_user_id = ? AND followed_user_id = ?",
                     followedFriendId, followingFriendId);
+            log.info("Заявка на добавление в друзья от пользователя с id {} одобрена пользователем с id {}!", followedFriendId, followingFriendId);
+
+        } else if (!isFollowedRowPresent) {
+
+            SqlRowSet followingFriendRows2 = jdbcTemplate.queryForRowSet(friendshipQuery, followingFriendId, followedFriendId);
+
+            if (followingFriendRows2.next()) {
+                if (followingFriendRows2.getBoolean("accept"))
+                    throw new AlreadyExistsException("Данные пользователь уже в списке Ваших друзей!");
+            }
+            jdbcTemplate.update(
+                    "UPDATE friendship SET accept = true WHERE following_user_id = ? AND followed_user_id = ?",
+                    followingFriendId, followedFriendId);
             log.info("Заявка на добавление в друзья от пользователя с id {} одобрена пользователем с id {}!", followedFriendId, followingFriendId);
         }
 
@@ -264,6 +290,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(Long userId) {
+
+        if (!containsUser(userId))
+            throw new NotFoundException("Пользователь не найден!");
 
         List<User> friends = new ArrayList<>();
 

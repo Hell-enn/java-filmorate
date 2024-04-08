@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -41,8 +42,8 @@ public class FilmDbStorage implements FilmStorage {
                 "INSERT INTO film (name, description, release_date, duration) VALUES (?, ?, ?, ?)";
         String insertRatingQuery =
                 "INSERT INTO rating_film (film_id, rating_id) VALUES (?, ?)";
-        String insertGenreQuery =
-                "INSERT INTO genre_film (film_id, genre_id) VALUES (?, ?)";
+        StringBuilder insertGenreQuery = new StringBuilder(
+                "INSERT INTO genre_film (film_id, genre_id) VALUES ");
 
         long mpaId = film.getMpa() == null ? -1 : film.getMpa().getId();
 
@@ -77,19 +78,21 @@ public class FilmDbStorage implements FilmStorage {
         if (genres != null) {
             for (Genre genre : genres) {
 
-                String genresQuery = "SELECT * FROM genre WHERE genre_id = ?";
-                SqlRowSet genresRows = jdbcTemplate.queryForRowSet(genresQuery, genre.getId());
-
+                SqlRowSet genresRows = jdbcTemplate.queryForRowSet("SELECT * FROM genre WHERE genre_id = ?", genre.getId());
                 if (!genresRows.next()) {
+                    jdbcTemplate.update("DELETE FROM film WHERE film_id = ?", filmId);
+                    jdbcTemplate.update("DELETE FROM rating_film WHERE film_id = ?", filmId);
+
                     throw new BadRequestException("Ошибка жанра в запросе!");
                 }
 
                 Long genreId = genre.getId();
                 if (!genresId.contains(genreId)) {
                     genresId.add(genreId);
-                    jdbcTemplate.update(insertGenreQuery, film.getId(), genreId);
+                    insertGenreQuery.append("(").append(film.getId()).append(",").append(genreId).append("),");
                 }
             }
+            jdbcTemplate.update(insertGenreQuery.substring(0, insertGenreQuery.length() - 1));
         }
 
         log.info("Фильм добавлен {} {}!", film.getId(), film.getName());
@@ -164,11 +167,10 @@ public class FilmDbStorage implements FilmStorage {
                     String deleteGenresQuery = "DELETE genre_film WHERE film_id = ?";
                     jdbcTemplate.update(deleteGenresQuery, film.getId());
 
-                    String insertGenreQuery =
-                            "INSERT INTO genre_film (film_id, genre_id) VALUES (?, ?)";
-                    for (Genre genre : film.getGenres()) {
-                        jdbcTemplate.update(insertGenreQuery, film.getId(), genre.getId());
-                    }
+                    StringBuilder insertGenreQuery = new StringBuilder("INSERT INTO genre_film (film_id, genre_id) VALUES ");
+                    for (Genre genre : film.getGenres())
+                        insertGenreQuery.append("(").append(film.getId()).append(", ").append(genre.getId()).append("),");
+                    jdbcTemplate.update(insertGenreQuery.substring(0, insertGenreQuery.length() - 1));
                 }
             } else if (addedFilm.getGenres() != null) {
                 String deleteGenresQuery = "DELETE genre_film WHERE film_id = ?";
@@ -292,9 +294,23 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Long addLike(Long filmId, Long userId) {
 
+        String userQuery = "SELECT * FROM users WHERE user_id = ?";
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(userQuery, userId);
+        if (!userRows.next())
+            throw new NotFoundException("Пользователь не найден!");
+
+        String filmQuery = "SELECT * FROM film WHERE film_id = ?";
+        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmQuery, filmId);
+        if (!filmRows.next())
+            throw new NotFoundException("Фильм не найден!");
+
         String insertLikeQuery = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
-        jdbcTemplate.update(insertLikeQuery, filmId, userId);
-        log.info("Лайк от пользователя с id {} добавлен фильму с id {}!", userId, filmId);
+        try {
+            jdbcTemplate.update(insertLikeQuery, filmId, userId);
+            log.info("Лайк от пользователя с id {} добавлен фильму с id {}!", userId, filmId);
+        } catch (DataIntegrityViolationException exception) {
+            throw new DataIntegrityViolationException("Лайк от данного пользователя уже поставлен этому фильму!");
+        }
 
         return filmId;
 

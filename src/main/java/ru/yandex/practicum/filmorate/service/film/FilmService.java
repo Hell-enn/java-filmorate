@@ -133,7 +133,8 @@ public class FilmService {
 
         List<Film> sortedFilms = filmDbStorage.getFilms();
         sortedFilms.sort(Comparator.comparingInt(film -> -filmDbStorage.getLikes((int) film.getId()).size()));
-        return sortedFilms.subList(0, (int) count);
+        long amount = count <= 10 ? 10 : count;
+        return sortedFilms.subList(0, (int) amount);
 
     }
 

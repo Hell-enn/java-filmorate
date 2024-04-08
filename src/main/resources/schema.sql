@@ -37,7 +37,8 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(200),
     login VARCHAR(200),
     name VARCHAR(200),
-    birthday DATE
+    birthday DATE,
+    CONSTRAINT chk_not_blank CHECK (email <> '' AND name <> '')
 );
 
 
@@ -47,8 +48,8 @@ ADD UNIQUE (login);
 
 
 CREATE TABLE IF NOT EXISTS genre_film (
-    film_id INTEGER,
-    genre_id INTEGER,
+    film_id INTEGER REFERENCES film(film_id),
+    genre_id INTEGER REFERENCES genre(genre_id),
     PRIMARY KEY (film_id, genre_id)
 );
 
@@ -56,7 +57,7 @@ CREATE TABLE IF NOT EXISTS genre_film (
 
 CREATE TABLE IF NOT EXISTS rating_film (
     film_id INTEGER PRIMARY KEY,
-    rating_id INTEGER
+    rating_id INTEGER REFERENCES rating(rating_id)
 );
 
 

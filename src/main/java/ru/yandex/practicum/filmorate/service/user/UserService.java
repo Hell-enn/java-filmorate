@@ -35,10 +35,6 @@ public class UserService {
 
         validateUser(user);
 
-        if (userDbStorage.containsUser(user.getId())) {
-            return null;
-        }
-
         userDbStorage.addUser(user);
         return user;
     }
@@ -106,9 +102,6 @@ public class UserService {
      * @param userToId
      */
     public User addFriend(long userFromId, long userToId) {
-
-        if (userToId == userFromId)
-            throw new IllegalArgumentException("Пользователь не может добавить в друзья сам себя!");
 
         if (!userDbStorage.containsUser(userFromId))
             throw new NotFoundException("Пользователь " + userFromId + " отсутствует в списке!");
