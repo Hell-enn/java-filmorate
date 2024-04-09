@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS film (
     name VARCHAR(200),
     description VARCHAR(1500),
     release_date DATE,
-    duration INTEGER
+    duration INTEGER,
+    rating_id INTEGER REFERENCES rating(rating_id) ON DELETE CASCADE
 );
 
 
@@ -55,24 +56,15 @@ CREATE TABLE IF NOT EXISTS genre_film (
 
 
 
-CREATE TABLE IF NOT EXISTS rating_film (
-    film_id INTEGER PRIMARY KEY,
-    rating_id INTEGER REFERENCES rating(rating_id) ON DELETE CASCADE
-);
-
-
-
 CREATE TABLE IF NOT EXISTS likes (
-    film_id INTEGER,
-    user_id INTEGER,
-    PRIMARY KEY (film_id, user_id)
+    film_id INTEGER REFERENCES film(film_id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 
 
 CREATE TABLE IF NOT EXISTS friendship (
-    following_user_id INTEGER,
-    followed_user_id INTEGER,
-    accept BOOLEAN DEFAULT FALSE,
-    PRIMARY KEY (following_user_id, followed_user_id)
+    following_user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    followed_user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    accept BOOLEAN DEFAULT FALSE
 );
