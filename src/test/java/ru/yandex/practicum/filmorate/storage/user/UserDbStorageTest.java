@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,19 +24,13 @@ class UserDbStorageTest {
         userStorage = new UserDbStorage(jdbcTemplate);
     }
 
-    @AfterEach
-    public void createContextAfter() {
-        jdbcTemplate.update("TRUNCATE TABLE friendship RESTART IDENTITY");
-        jdbcTemplate.update("TRUNCATE TABLE users RESTART IDENTITY");
-    }
-
 
     @Test
     public void findUserByIdTest() {
         User newUser = new User(1L, "user@email.ru", "vanya123", "Ivan Petrov", LocalDate.of(1990, 1, 1));
-        userStorage.addUser(newUser);
+        newUser.setId(userStorage.addUser(newUser).getId());
 
-        User savedUser = userStorage.getUser(1);
+        User savedUser = userStorage.getUser(newUser.getId());
 
         assertThat(savedUser)
                 .isNotNull()
@@ -61,13 +54,9 @@ class UserDbStorageTest {
     @Test
     public void containsUserTest() {
         User newUser = new User(6L, "user@email.ru", "vanya123", "Ivan Petrov", LocalDate.of(1990, 1, 1));
-        userStorage.addUser(newUser);
-
-        /**
-         * тест работает, но автотесты не гитхабе его не пропускают:(
-        assertThat(userStorage.containsUser(6))
+        newUser.setId(userStorage.addUser(newUser).getId());
+        assertThat(userStorage.containsUser(newUser.getId()))
                 .isTrue();
-         **/
     }
 
 
@@ -79,13 +68,15 @@ class UserDbStorageTest {
         User newUser4 = new User(4L, "user4@email.ru", "artur67", "Artur Pirozhkov", LocalDate.of(1993, 4, 4));
         User newUser5 = new User(5L, "user5@email.ru", "viktoriya17", "Viktoriya Polyanskaya", LocalDate.of(1994, 5, 5));
 
-        List<User> users = List.of(newUser1, newUser2, newUser3, newUser4, newUser5);
+        jdbcTemplate.update("DELETE FROM users");
 
-        userStorage.addUser(newUser1);
-        userStorage.addUser(newUser2);
-        userStorage.addUser(newUser3);
-        userStorage.addUser(newUser4);
-        userStorage.addUser(newUser5);
+        newUser1.setId(userStorage.addUser(newUser1).getId());
+        newUser2.setId(userStorage.addUser(newUser2).getId());
+        newUser3.setId(userStorage.addUser(newUser3).getId());
+        newUser4.setId(userStorage.addUser(newUser4).getId());
+        newUser5.setId(userStorage.addUser(newUser5).getId());
+
+        List<User> users = List.of(newUser1, newUser2, newUser3, newUser4, newUser5);
 
         List<User> savedUsers = userStorage.getUsers();
 
@@ -102,31 +93,33 @@ class UserDbStorageTest {
         User newUser4 = new User(4L, "user4@email.ru", "artur67", "Artur Pirozhkov", LocalDate.of(1993, 4, 4));
         User newUser5 = new User(5L, "user5@email.ru", "viktoriya17", "Viktoriya Polyanskaya", LocalDate.of(1994, 5, 5));
 
-        userStorage.addUser(newUser1);
-        userStorage.addUser(newUser2);
-        userStorage.addUser(newUser3);
-        userStorage.addUser(newUser4);
-        userStorage.addUser(newUser5);
+        newUser1.setId(userStorage.addUser(newUser1).getId());
+        newUser2.setId(userStorage.addUser(newUser2).getId());
+        newUser3.setId(userStorage.addUser(newUser3).getId());
+        newUser4.setId(userStorage.addUser(newUser4).getId());
+        newUser5.setId(userStorage.addUser(newUser5).getId());
 
-        userStorage.addFriend(1L, 2L);
-        userStorage.addFriend(1L, 3L);
-        userStorage.addFriend(1L, 4L);
-        userStorage.addFriend(1L, 5L);
-        userStorage.addFriend(2L, 3L);
-        userStorage.addFriend(3L, 5L);
-        userStorage.addFriend(3L, 4L);
-        userStorage.addFriend(5L, 2L);
+        jdbcTemplate.update("DELETE FROM friendship");
+
+        userStorage.addFriend(newUser1.getId(), newUser2.getId());
+        userStorage.addFriend(newUser1.getId(), newUser3.getId());
+        userStorage.addFriend(newUser1.getId(), newUser4.getId());
+        userStorage.addFriend(newUser1.getId(), newUser5.getId());
+        userStorage.addFriend(newUser2.getId(), newUser3.getId());
+        userStorage.addFriend(newUser3.getId(), newUser5.getId());
+        userStorage.addFriend(newUser3.getId(), newUser4.getId());
+        userStorage.addFriend(newUser5.getId(), newUser2.getId());
 
         List<User> friendship = List.of(newUser2, newUser3, newUser4, newUser5);
-        List<User> friendshipDB = userStorage.getFriends(1L);
+        List<User> friendshipDB = userStorage.getFriends(newUser1.getId());
 
         assertThat(friendship)
                 .isEqualTo(friendshipDB);
 
-        userStorage.deleteFriend(1L, 5L);
+        userStorage.deleteFriend(newUser1.getId(), newUser5.getId());
         List<User> newFriendship = List.of(newUser2, newUser3, newUser4);
 
-        assertThat(userStorage.getFriends(1L))
+        assertThat(userStorage.getFriends(newUser1.getId()))
                 .isEqualTo(newFriendship);
 
     }
@@ -136,16 +129,16 @@ class UserDbStorageTest {
     public void updateUserTest() {
 
         User newUser1 = new User(1L, "user1@email.ru", "vanya123", "Ivan Petrov", LocalDate.of(1990, 1, 1));
-        userStorage.addUser(newUser1);
+        newUser1.setId(userStorage.addUser(newUser1).getId());
 
-        assertThat(userStorage.getUser(1L))
+        assertThat(userStorage.getUser(newUser1.getId()))
                 .isEqualTo(newUser1);
 
         newUser1.setName("Иван Иванов");
 
         userStorage.updateUser(newUser1);
 
-        assertThat(userStorage.getUser(1L))
+        assertThat(userStorage.getUser(newUser1.getId()))
                 .isEqualTo(newUser1);
 
     }

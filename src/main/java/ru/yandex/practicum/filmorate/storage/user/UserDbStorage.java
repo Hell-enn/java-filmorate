@@ -35,10 +35,6 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User addUser(User user) {
 
-        if (containsUser(user.getId())) {
-            throw new AlreadyExistsException("Пользователь уже существует!");
-        }
-
         String insertUserQuery =
                 "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
 
