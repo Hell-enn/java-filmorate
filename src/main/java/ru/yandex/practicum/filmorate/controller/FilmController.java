@@ -40,7 +40,7 @@ public class FilmController {
         }
 
         log.debug("Фильм \"{}\" добавлен!", film.getName());
-        return film;
+        return addedFilm;
     }
 
 

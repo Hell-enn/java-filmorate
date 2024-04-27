@@ -3,10 +3,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Класс InMemoryUserStorage является реализацией интерфейса
@@ -28,10 +25,17 @@ public class InMemoryUserStorage implements UserStorage {
 
 
     @Override
-    public void addUser(User user) {
+    public User addUser(User user) {
         if (user.getId() <= 0)
             user.setId(getId());
         users.put(user.getId(), user);
+        return user;
+    }
+
+
+    @Override
+    public User updateUser(User user) {
+        return null;
     }
 
 
@@ -56,5 +60,29 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public List<User> getUsers() {
         return new ArrayList<>(users.values());
+    }
+
+
+    @Override
+    public User addFriend(Long followingFriendId, Long followedFriendId) {
+        return null;
+    }
+
+
+    @Override
+    public void deleteFriend(Long followingFriendId, Long followedFriendId) {
+
+    }
+
+
+    @Override
+    public List<User> getFriends(Long userId) {
+        return null;
+    }
+
+
+    @Override
+    public List<User> getCommonFriends(long user1Id, long user2Id) {
+        return null;
     }
 }

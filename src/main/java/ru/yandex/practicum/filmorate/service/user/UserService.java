@@ -2,30 +2,29 @@ package ru.yandex.practicum.filmorate.service.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
  * Класс UserService предоставляет функциональность по
- * взаимодействию со списком друзей у объектов типа User
- * (добавление, удаление, вывод списка общих друзей).
+ * взаимодействию со списком пользователей и их друзей -
+ * объекты типа User
+ * (добавление, удаление, вывод списка пользователей и их общих друзей).
  */
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserStorage userStorage;
+    private final UserStorage userDbStorage;
 
 
     /**
-     * Метод добавляяет нового пользователя в список в случае,
+     * Метод добавляет нового пользователя в список в случае,
      * если он в нём отсутствует. Иначе выбрасывает исключение
      * ValidateException с сообщением об ошибке.
      * В случае успеха возвращает добавленный объект.
@@ -36,12 +35,7 @@ public class UserService {
 
         validateUser(user);
 
-        if (userStorage.containsUser(user.getId())) {
-            return null;
-        }
-
-        user.setFriends(new HashSet<>());
-        userStorage.addUser(user);
+        userDbStorage.addUser(user);
         return user;
     }
 
@@ -55,15 +49,7 @@ public class UserService {
      * @return
      */
     public User putUser(User user) {
-
-        validateUser(user);
-
-        if (!userStorage.containsUser(user.getId())) {
-            throw new UserNotFoundException("Пользователь отсутствует в списке!");
-        }
-
-        userStorage.addUser(user);
-        return user;
+        return userDbStorage.updateUser(user);
     }
 
 
@@ -73,7 +59,7 @@ public class UserService {
      */
     public List<User> getUsers() {
 
-        return userStorage.getUsers();
+        return userDbStorage.getUsers();
 
     }
 
@@ -93,6 +79,10 @@ public class UserService {
 
         if (user == null)
             message = "Вы не передали информацию о пользователе!";
+        else if (user.getName() == null)
+            message = "Имя пользователя отсутствует!";
+        else if (!user.getEmail().contains("@"))
+            message = "Неправильный формат электронной почты!";
         else if (user.getBirthday().isAfter(LocalDate.now()))
             message = "Неверно указана дата рождения!";
         else if (user.getName().isBlank())
@@ -101,6 +91,7 @@ public class UserService {
         if (!message.isBlank()) {
             throw new ValidationException(message);
         }
+
     }
 
 
@@ -112,22 +103,13 @@ public class UserService {
      */
     public User addFriend(long userFromId, long userToId) {
 
-        if (userToId == userFromId)
-            throw new IllegalArgumentException("Пользователь не может добавить в друзья сам себя!");
+        if (!userDbStorage.containsUser(userFromId))
+            throw new NotFoundException("Пользователь " + userFromId + " отсутствует в списке!");
 
-        User userFrom = userStorage.getUser(userFromId);
-        User userTo = userStorage.getUser(userToId);
+        if (!userDbStorage.containsUser(userToId))
+            throw new NotFoundException("Пользователь " + userToId + " отсутствует в списке!");
 
-        if (userFrom == null)
-            throw new UserNotFoundException("Пользователь " + userFromId + " отсутствует в списке!");
-
-        if (userTo == null)
-            throw new UserNotFoundException("Пользователь " + userToId + " отсутствует в списке!");
-
-        userFrom.addFriend(userToId);
-        userTo.addFriend(userFromId);
-
-        return userTo;
+        return userDbStorage.addFriend(userFromId, userToId);
 
     }
 
@@ -135,26 +117,11 @@ public class UserService {
     /**
      * Метод удаляет из списка друзей объекта userFrom
      * id объекта userTo и наоборот.
-     * @param userFromId
-     * @param userToId
+     * @param followingUserId
+     * @param followedUserId
      */
-    public User deleteFriend(long userFromId, long userToId) {
-
-        User userFrom = userStorage.getUser(userFromId);
-        User userTo = userStorage.getUser(userToId);
-
-        if (userFrom == null)
-            throw new UserNotFoundException("Пользователь " + userFromId + " отсутствует в списке!");
-
-        if (userTo == null)
-            throw new UserNotFoundException("Пользователь " + userToId + " отсутствует в списке!");
-
-        if (userFrom.getFriends().contains(userFromId)) {
-            userFrom.deleteFriend(userToId);
-            userTo.deleteFriend(userFromId);
-        }
-
-        return userTo;
+    public void deleteFriend(long followingUserId, long followedUserId) {
+        userDbStorage.deleteFriend(followingUserId, followedUserId);
     }
 
 
@@ -165,16 +132,10 @@ public class UserService {
      */
     public List<User> getFriends(long userId) {
 
-        User user = userStorage.getUser(userId);
-        if (user == null)
-            throw new UserNotFoundException("Пользователь " + userId + " отсутствует в списке!");
+        if (!userDbStorage.containsUser(userId))
+            throw new NotFoundException("Пользователь " + userId + " отсутствует в списке!");
 
-        List<User> friends = new ArrayList<>();
-        for (Long id: user.getFriends()) {
-            friends.add(userStorage.getUser(Math.toIntExact(id)));
-        }
-
-        return friends;
+        return userDbStorage.getFriends(userId);
 
     }
 
@@ -187,27 +148,7 @@ public class UserService {
      * @return
      */
     public List<User> getCommonFriends(long user1Id, long user2Id) {
-
-        List<Long> commonFriendsIds;
-        List<User> commonFriends = new ArrayList<>();
-
-        User user1 = userStorage.getUser(user1Id);
-        User user2 = userStorage.getUser(user2Id);
-
-        if (user1 == null)
-            throw new UserNotFoundException("Пользователь " + user1Id + " отсутствует в списке!");
-
-        if (user2 == null)
-            throw new UserNotFoundException("Пользователь " + user2Id + " отсутствует в списке!");
-
-        commonFriendsIds = new ArrayList<>(user1.getFriends());
-        commonFriendsIds.retainAll(user2.getFriends());
-
-        for (Long id: commonFriendsIds) {
-            commonFriends.add(userStorage.getUser(Math.toIntExact(id)));
-        }
-
-        return commonFriends;
+        return userDbStorage.getCommonFriends(user1Id, user2Id);
     }
 
 
@@ -218,9 +159,9 @@ public class UserService {
      */
     public User getUser(long id) {
 
-        User user = userStorage.getUser(id);
+        User user = userDbStorage.getUser(id);
         if (user == null)
-            throw new UserNotFoundException("Пользователь " + id + " отсутствует в списке!");
+            throw new NotFoundException("Пользователь " + id + " отсутствует в списке!");
 
         return user;
 

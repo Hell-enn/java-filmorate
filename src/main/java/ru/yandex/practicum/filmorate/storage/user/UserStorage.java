@@ -10,12 +10,18 @@ import java.util.List;
  */
 public interface UserStorage {
 
-
     /**
      * Добавляет объект user в список.
      * @param user
      */
-    void addUser(User user);
+    User addUser(User user);
+
+
+    /**
+     * Обновляет объект user в списке.
+     * @param user
+     */
+    User updateUser(User user);
 
 
     /**
@@ -25,7 +31,13 @@ public interface UserStorage {
     void deleteUser(long id);
 
 
+    /**
+     * Метод возвращает из хранилища объект пользователя по его id.
+     * @param id
+     * @return
+     */
     User getUser(long id);
+
 
     /**
      * Метод отвечает на вопрос, содержится ли пользователь с
@@ -34,10 +46,44 @@ public interface UserStorage {
      */
     boolean containsUser(long id);
 
+
     /**
      * Метод возвращает список пользователей.
      * @return
      */
     List<User> getUsers();
+
+
+    /**
+     * Метод добавляет в список друзей пользователя с id = followingFriendId
+     * пользователя с id = followedFriendId.
+     * @param followingFriendId
+     * @param followedFriendId
+     */
+    User addFriend(Long followingFriendId, Long followedFriendId);
+
+
+    /**
+     * Метод удаляет из списка друзей пользователя с id = followingFriendId
+     * пользователя с id = followedFriendId.
+     * @param followingFriendId
+     * @param followedFriendId
+     */
+    void deleteFriend(Long followingFriendId, Long followedFriendId);
+
+
+    /**
+     * Метод возвращает спикок id друзей пользователя с id = userId.
+     * @param userId
+     */
+    List<User> getFriends(Long userId);
+
+
+    /**
+     * Метод возвращает спикок общих друзей для пользователей с id user1Id и user2Id.
+     * @param user1Id
+     * @param user2Id
+     */
+    List<User> getCommonFriends(long user1Id, long user2Id);
 
 }

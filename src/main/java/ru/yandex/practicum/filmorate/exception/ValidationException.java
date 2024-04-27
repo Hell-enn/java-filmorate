@@ -9,7 +9,6 @@ import lombok.Getter;
  * объекты-сущности не проходят валидацию по определенным
  * параметрам.
  */
-
 @Getter
 public class ValidationException extends RuntimeException {
 

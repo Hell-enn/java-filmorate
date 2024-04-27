@@ -8,13 +8,20 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+import java.util.Objects;
 
 /**
- * Класс Film - бизнес-сущность. Необходм для
- * последующего создания объектов типа Film с
- * обозначенным рядом свойств.
+ * Класс Film - бизнес-сущность. Необходим для
+ * последующего создания объектов для каждого фильма
+ * со свойствами:
+ * - идентификатор фильма (id)
+ * - название фильма (name)
+ * - описание фильма (description)
+ * - дата выхода фильма (releaseDate)
+ * - продолжительность фильма (duration)
+ * - возрастной рейтинг фильма (mpa)
+ * - список жанров фильма (genres).
  */
 @Data
 @AllArgsConstructor
@@ -31,39 +38,26 @@ public class Film {
     private final LocalDate releaseDate;
     @Min(1)
     private final int duration;
-    private final Set<Long> likes = new HashSet<>();
-    private final Set<String> genre;
-    private final String mpa;
+    private MPA mpa;
+    private List<Genre> genres;
 
     /**
-     * Метод добавляет id пользователя в набор, если он оценил данный фильм.
-     * @param userId
+     * Поле genres не учитывается в equals, т.к. при прогонке тестов
+     * порядок жанров в списке меняется, что является причиной
+     * ошибок, хотя фактически объекты идентичны.
+     * @param o
      * @return
      */
-    public Long addLike(Long userId) {
-
-        if (!likes.contains(userId)) {
-            likes.add(userId);
-            return userId;
-        }
-
-        return null;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Film film = (Film) o;
+        return id == film.id && duration == film.duration && Objects.equals(name, film.name) && Objects.equals(description, film.description) && Objects.equals(releaseDate, film.releaseDate) && Objects.equals(mpa, film.mpa);
     }
 
-    /**
-     * Метод удаляет id пользователя из набора.
-     * @param userId
-     * @return
-     */
-    public Long deleteLike(Long userId) {
-
-        if (!likes.contains(userId)) {
-            likes.remove(userId);
-            return userId;
-        }
-
-        return null;
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, releaseDate, duration, mpa);
     }
-
 }

@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Like;
 
 import java.util.*;
 
@@ -25,10 +27,17 @@ public class InMemoryFilmStorage implements FilmStorage {
 
 
     @Override
-    public void addFilm(Film film) {
+    public Film addFilm(Film film) {
         if (film.getId() <= 0)
             film.setId(getId());
         films.put(film.getId(), film);
+        return null;
+    }
+
+
+    @Override
+    public Film updateFilm(Film film) {
+        return null;
     }
 
 
@@ -53,5 +62,29 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public List<Film> getFilms() {
         return new ArrayList<>(films.values());
+    }
+
+
+    @Override
+    public Long addLike(Long filmId, Long userId) {
+        return null;
+    }
+
+
+    @Override
+    public Long deleteLike(Long filmId, Long userId) {
+        return null;
+    }
+
+
+    @Override
+    public Set<Like> getLikes(int filmId) {
+        return null;
+    }
+
+
+    @Override
+    public Set<Genre> getFilmGenres(int filmId) {
+        return null;
     }
 }
