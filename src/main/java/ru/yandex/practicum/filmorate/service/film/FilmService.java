@@ -119,8 +119,7 @@ public class FilmService {
         if (film == null)
             throw new NotFoundException("Фильм отсутствует в списке!");
 
-        if (filmDbStorage.getLikes((int) filmId).contains(userId))
-            filmDbStorage.deleteLike(filmId, userId);
+        filmDbStorage.deleteLike(filmId, userId);
     }
 
 
