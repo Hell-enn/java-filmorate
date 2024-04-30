@@ -41,8 +41,8 @@ public class FilmDbStorageTest {
         Film newFilm = new Film(6L, "Фильм 1", "Описание 1",
                 LocalDate.of(1990, 1, 1), 200, g, genres);
 
-        filmStorage.addFilm(newFilm);
-        Film savedFilm = filmStorage.getFilm(6L);
+        newFilm.setId(filmStorage.addFilm(newFilm).getId());
+        Film savedFilm = filmStorage.getFilm(newFilm.getId());
 
         assertThat(savedFilm)
                 .isNotNull()
@@ -79,9 +79,9 @@ public class FilmDbStorageTest {
         Film newFilm = new Film(6L, "Фильм 1", "Описание 1",
                 LocalDate.of(1990, 1, 1), 200, g, genres);
 
-        filmStorage.addFilm(newFilm);
+        newFilm.setId(filmStorage.addFilm(newFilm).getId());
 
-        assertThat(filmStorage.containsFilm(1L))
+        assertThat(filmStorage.containsFilm(newFilm.getId()))
                 .isTrue();
 
     }

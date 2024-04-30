@@ -59,6 +59,13 @@ public interface FilmStorage {
 
 
     /**
+     * Метод возвращает список из count фильмов, отсортированных по популярности.
+     * @return
+     */
+    List<Film> getPopularFilms(int count);
+
+
+    /**
      * Метод добавляет id пользователя в перечень лайков, если он оценил данный фильм.
      * @param userId
      * @return

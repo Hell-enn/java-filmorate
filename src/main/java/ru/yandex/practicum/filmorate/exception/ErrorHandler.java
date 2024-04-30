@@ -6,10 +6,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmorate.controller.FilmController;
-import ru.yandex.practicum.filmorate.controller.GenreController;
-import ru.yandex.practicum.filmorate.controller.RatingController;
-import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.controller.*;
 
 import java.util.Map;
 
@@ -19,7 +16,8 @@ import java.util.Map;
  * кода ответа на клиентскую сторону с детальным описанием
  * причин возникшей проблемы.
  */
-@RestControllerAdvice(assignableTypes = {FilmController.class, UserController.class, GenreController.class, RatingController.class})
+@RestControllerAdvice(assignableTypes = {FilmController.class, UserController.class, GenreController.class,
+                      RatingController.class, ReviewController.class})
 public class ErrorHandler {
 
     @ExceptionHandler

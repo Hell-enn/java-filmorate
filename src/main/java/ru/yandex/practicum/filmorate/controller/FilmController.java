@@ -128,13 +128,7 @@ public class FilmController {
     @GetMapping("/films/popular")
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
 
-        int filmsAmount = filmService.getFilms().size();
-        if (count > filmsAmount) {
-            log.debug("Возвращаем список " + filmsAmount + " самых популярных фильмов!");
-            return filmService.getPopularFilms(filmsAmount);
-        } else {
-            log.debug("Возвращаем список " + count + " самых популярных фильмов!");
-            return filmService.getPopularFilms(count);
-        }
+        return filmService.getPopularFilms(count);
+
     }
 }
