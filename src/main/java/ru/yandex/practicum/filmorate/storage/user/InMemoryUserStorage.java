@@ -89,7 +89,7 @@ public class InMemoryUserStorage implements UserStorage {
 
 
     @Override
-    public List<Event> getUserFeed(long id ) {
+    public List<Event> getUserFeed(long id) {
         return null;
     }
 }
