@@ -137,11 +137,10 @@ public class ReviewDbStorage implements ReviewStorage {
     public void deleteReview(long id) {
         Review review = getReview(id);
         String sqlQuery = "DELETE FROM review WHERE review_id = ?";
-        if (jdbcTemplate.update(sqlQuery, id) > 0){
+        if (jdbcTemplate.update(sqlQuery, id) > 0) {
             log.info("Удален отзыв с id = {}", id);
 
             addEvent(new Event(System.currentTimeMillis(), review.getUserId(), "REVIEW", "REMOVE", review.getReviewId()));
-
         } else {
             log.info("Отзыв с id = {} не удален или отсутствует в списке", id);
             throw new NotFoundException("Отзыв с id = " + id + " не найден!");
