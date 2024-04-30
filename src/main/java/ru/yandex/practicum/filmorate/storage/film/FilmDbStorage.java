@@ -326,8 +326,7 @@ public class FilmDbStorage implements FilmStorage {
             throw new DataIntegrityViolationException("Лайк от данного пользователя уже поставлен этому фильму!");
         }
 
-        long timestamp = System.currentTimeMillis() / 1000;
-        addEvent(new Event(timestamp, userId, "LIKE", "ADD", filmId));
+        addEvent(new Event(System.currentTimeMillis(), userId, "LIKE", "ADD", filmId));
 
         return filmId;
 
@@ -353,8 +352,7 @@ public class FilmDbStorage implements FilmStorage {
         else
             log.info("Лайк отсутствует в списке!");
 
-        long timestamp = System.currentTimeMillis() / 1000;
-        addEvent(new Event(timestamp, userId, "LIKE", "REMOVE", filmId));
+        addEvent(new Event(System.currentTimeMillis(), userId, "LIKE", "REMOVE", filmId));
 
         return filmId;
     }
