@@ -10,6 +10,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Like;
@@ -325,6 +326,9 @@ public class FilmDbStorage implements FilmStorage {
             throw new DataIntegrityViolationException("Лайк от данного пользователя уже поставлен этому фильму!");
         }
 
+        long timestamp = System.currentTimeMillis() / 1000;
+        addEvent(new Event(timestamp, userId, "LIKE", "ADD", filmId));
+
         return filmId;
 
     }
@@ -348,6 +352,9 @@ public class FilmDbStorage implements FilmStorage {
             log.info("Лайк от пользователя с id {} удален с фильма с id {}!", userId, filmId);
         else
             log.info("Лайк отсутствует в списке!");
+
+        long timestamp = System.currentTimeMillis() / 1000;
+        addEvent(new Event(timestamp, userId, "LIKE", "REMOVE", filmId));
 
         return filmId;
     }
@@ -400,6 +407,14 @@ public class FilmDbStorage implements FilmStorage {
 
         return genres;
 
+    }
+
+    private void addEvent(Event event) {
+        String insertEventQuery = "INSERT INTO events (timestamp, user_id, event_type, operation, entity_id)" +
+                "VALUES (?, ?, ?, ?, ?);";
+
+        jdbcTemplate.update(insertEventQuery, event.getTimestamp(), event.getUserId(), event.getEventType(),
+                event.getOperation(), event.getEntityId());
     }
 }
 

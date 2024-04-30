@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -83,6 +84,12 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriends(long user1Id, long user2Id) {
+        return null;
+    }
+
+
+    @Override
+    public List<Event> getUserFeed(long id ) {
         return null;
     }
 }

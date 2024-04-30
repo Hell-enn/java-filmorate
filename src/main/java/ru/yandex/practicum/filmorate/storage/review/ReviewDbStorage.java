@@ -51,6 +51,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
         String insertReviewQuery =
                 "INSERT INTO review (content, is_positive, user_id, film_id) VALUES (?, ?, ?, ?)";
+
         if (review.getIsPositive() == null)
             review.setIsPositive(true);
 
@@ -65,6 +66,9 @@ public class ReviewDbStorage implements ReviewStorage {
                 stmt.setLong(4, review.getFilmId());
                 return stmt;
             }, keyHolder);
+            long timestamp = System.currentTimeMillis() / 1000;
+            addEvent(new Event(timestamp, review.getUserId(), "REVIEW", "ADD", review.getFilmId()));
+
         } catch (DataIntegrityViolationException exception) {
             throw new DataIntegrityViolationException("Ошибка при создании объекта типа Review!");
         }
@@ -93,6 +97,9 @@ public class ReviewDbStorage implements ReviewStorage {
                                       "SET content = ? " +
                                       "WHERE review_id = ?;";
                 jdbcTemplate.update(contentQuery, review.getContent(), review.getReviewId());
+
+                long timestamp = System.currentTimeMillis() / 1000;
+                addEvent(new Event(timestamp, review.getUserId(), "REVIEW", "UPDATE", review.getFilmId()));
             }
 
             if (review.getIsPositive() != addedReview.getIsPositive()) {
@@ -100,6 +107,9 @@ public class ReviewDbStorage implements ReviewStorage {
                                          "SET is_positive = ? " +
                                          "WHERE review_id = ?;";
                 jdbcTemplate.update(isPositiveQuery, review.getIsPositive(), review.getReviewId());
+
+                long timestamp = System.currentTimeMillis() / 1000;
+                addEvent(new Event(timestamp, review.getUserId(), "REVIEW", "UPDATE", review.getFilmId()));
             }
 
             if (!review.getUserId().equals(addedReview.getUserId())) {
@@ -129,11 +139,13 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void deleteReview(long id) {
-
+        Review review = getReview(id);
         String sqlQuery = "DELETE FROM review WHERE review_id = ?";
-        if (jdbcTemplate.update(sqlQuery, id) > 0)
+        if (jdbcTemplate.update(sqlQuery, id) > 0){
             log.info("Удален отзыв с id = {}", id);
-        else {
+            long timestamp = System.currentTimeMillis() / 1000;
+            addEvent(new Event(timestamp, review.getUserId(), "REVIEW", "REMOVE", review.getFilmId()));
+        } else {
             log.info("Отзыв с id = {} не удален или отсутствует в списке", id);
             throw new NotFoundException("Отзыв с id = " + id + " не найден!");
         }
@@ -289,5 +301,13 @@ public class ReviewDbStorage implements ReviewStorage {
             log.info("Оценка отсутствует в списке!");
 
         return reviewId;
+    }
+
+    private void addEvent(Event event) {
+        String insertEventQuery = "INSERT INTO events (timestamp, user_id, event_type, operation, entity_id)" +
+                "VALUES (?, ?, ?, ?, ?);";
+
+        jdbcTemplate.update(insertEventQuery, event.getTimestamp(), event.getUserId(), event.getEventType(),
+                event.getOperation(), event.getEntityId());
     }
 }

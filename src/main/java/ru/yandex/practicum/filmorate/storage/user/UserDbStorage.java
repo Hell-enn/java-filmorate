@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -243,6 +244,9 @@ public class UserDbStorage implements UserStorage {
             log.info("Заявка на добавление в друзья от пользователя с id {} одобрена пользователем с id {}!", followedFriendId, followingFriendId);
         }
 
+        long timestamp = System.currentTimeMillis() / 1000;
+        addEvent(new Event(timestamp, followingFriendId, "FRIEND", "ADD", followedFriendId));
+
         return getUser(followingFriendId);
 
     }
@@ -277,6 +281,9 @@ public class UserDbStorage implements UserStorage {
                     followingFriendId, followedFriendId);
 
         }
+
+        long timestamp = System.currentTimeMillis() / 1000;
+        addEvent(new Event(timestamp, followingFriendId, "FRIEND", "REMOVE", followedFriendId));
 
         if (amount > 0)
             log.info("Подписка пользователя с id {} отменена с пользователя с id {}!", followingFriendId, followedFriendId);
@@ -315,6 +322,24 @@ public class UserDbStorage implements UserStorage {
 
     }
 
+    @Override
+    public List<Event> getUserFeed(long id) {
+        User user = getUser(id);
+        if(user == null){
+            throw new NotFoundException(" ");
+        }
+        String getFeedQuery = "SELECT * FROM events WHERE user_id = ?;";
+        return jdbcTemplate.query(getFeedQuery, (rs, rowNum) -> {
+            int eventId = rs.getInt("event_id");
+            int timestamp = rs.getInt("timestamp");
+            int userId = rs.getInt("user_id");
+            String eventType = rs.getString("event_type");
+            String operation = rs.getString("operation");
+            int entityId = rs.getInt("entity_id");
+
+            return new Event(eventId, timestamp, userId, eventType, operation, entityId);
+        }, id);
+    }
 
     public List<User> getCommonFriends(long user1Id, long user2Id) {
 
@@ -329,6 +354,14 @@ public class UserDbStorage implements UserStorage {
         }
 
         return commonFriends;
+    }
+
+    private void addEvent(Event event) {
+        String insertEventQuery = "INSERT INTO events (timestamp, user_id, event_type, operation, entity_id)" +
+                "VALUES (?, ?, ?, ?, ?);";
+
+        jdbcTemplate.update(insertEventQuery, event.getTimestamp(), event.getUserId(), event.getEventType(),
+                event.getOperation(), event.getEntityId());
     }
 }
 
