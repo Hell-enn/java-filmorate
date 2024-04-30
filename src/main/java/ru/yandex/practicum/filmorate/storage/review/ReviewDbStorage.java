@@ -33,6 +33,22 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public Review addReview(Review review) {
 
+        if (review.getUserId() == null)
+            throw new BadRequestException("Не передан идентификатор пользователя!");
+        else if (review.getFilmId() == null)
+            throw new BadRequestException("Не передан идентификатор фильма!");
+        else if (review.getIsPositive() == null)
+            throw new BadRequestException("Не передан тип отзыва!");
+
+        SqlRowSet userRow = jdbcTemplate.queryForRowSet("SELECT * FROM users WHERE user_id = ?", review.getUserId());
+        SqlRowSet filmRow = jdbcTemplate.queryForRowSet("SELECT * FROM film WHERE film_id = ?", review.getFilmId());
+
+        if (!userRow.next())
+            throw new NotFoundException("Передан неверный идентификатор пользователя: " + review.getUserId());
+
+        if (!filmRow.next())
+            throw new NotFoundException("Передан неверный идентификатор фильма: " + review.getFilmId());
+
         String insertReviewQuery =
                 "INSERT INTO review (content, is_positive, user_id, film_id) VALUES (?, ?, ?, ?)";
         if (review.getIsPositive() == null)
@@ -74,22 +90,25 @@ public class ReviewDbStorage implements ReviewStorage {
             Review addedReview = getReview(reviewRows.getLong("review_id"));
             if (!review.getContent().equals(addedReview.getContent())) {
                 String contentQuery = "UPDATE review " +
-                        "SET content = ? " +
-                        "WHERE review_id = ?;";
+                                      "SET content = ? " +
+                                      "WHERE review_id = ?;";
                 jdbcTemplate.update(contentQuery, review.getContent(), review.getReviewId());
             }
 
             if (review.getIsPositive() != addedReview.getIsPositive()) {
                 String isPositiveQuery = "UPDATE review " +
-                        "SET is_positive = ? " +
-                        "WHERE review_id = ?;";
+                                         "SET is_positive = ? " +
+                                         "WHERE review_id = ?;";
                 jdbcTemplate.update(isPositiveQuery, review.getIsPositive(), review.getReviewId());
             }
 
-            if (review.getUserId() != addedReview.getUserId())
-                throw new BadRequestException("Нельзя изменить информацию об опубликовавшем фильм пользователе!");
-            else if (review.getFilmId() != addedReview.getFilmId())
-                throw new BadRequestException("Нельзя изменить фильм, на который написан отзыв!");
+            if (!review.getUserId().equals(addedReview.getUserId())) {
+                review.setUserId(addedReview.getUserId());
+            }
+
+            if (!review.getFilmId().equals(addedReview.getFilmId())) {
+                review.setFilmId(addedReview.getFilmId());
+            }
 
             String usefulnessQuery = "SELECT " +
                     "                  (SELECT COUNT(is_useful) " +
@@ -198,8 +217,8 @@ public class ReviewDbStorage implements ReviewStorage {
         int reviewId = reviewRows.getInt("review_id");
         String content = reviewRows.getString("content");
         boolean isPositive = reviewRows.getBoolean("is_positive");
-        long userId = reviewRows.getInt("review_id");
-        long filmId = reviewRows.getInt("review_id");
+        long userId = reviewRows.getInt("user_id");
+        long filmId = reviewRows.getInt("film_id");
         int useful = 0;
 
         String usefulnessQuery = "SELECT " +

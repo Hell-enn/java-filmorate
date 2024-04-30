@@ -23,12 +23,13 @@ public class Review {
 
     private long reviewId;
     @Size(min = 1)
+    @NotNull(message = "Поле content отсутствует!")
     private final String content;
     private Boolean isPositive;
     @NotNull(message = "Поле userId отсутствует!")
-    private long userId;
+    private Long userId;
     @NotNull(message = "Поле filmId отсутствует!")
-    private long filmId;
+    private Long filmId;
     private int useful;
 
 }
