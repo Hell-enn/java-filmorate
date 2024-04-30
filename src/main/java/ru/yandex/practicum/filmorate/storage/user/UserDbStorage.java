@@ -32,8 +32,12 @@ public class UserDbStorage implements UserStorage {
     }
 
 
+    @SuppressWarnings("checkstyle:Regexp")
     @Override
     public User addUser(User user) {
+
+        if (user.getName().isBlank())
+            user.setName(user.getLogin());
 
         String insertUserQuery =
                 "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";

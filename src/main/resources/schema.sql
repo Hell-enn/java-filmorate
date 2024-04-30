@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS users (
     login VARCHAR(200),
     name VARCHAR(200),
     birthday DATE,
-    CONSTRAINT chk_not_blank CHECK (email <> '' AND name <> '')
+    CONSTRAINT chk_not_blank CHECK (email <> '')
 );
 
 

@@ -128,12 +128,9 @@ public class FilmService {
      * фильмов.
      * @return
      */
-    public List<Film> getPopularFilms(long count) {
+    public List<Film> getPopularFilms(int count) {
 
-        List<Film> sortedFilms = filmDbStorage.getFilms();
-        sortedFilms.sort(Comparator.comparingInt(film -> -filmDbStorage.getLikes((int) film.getId()).size()));
-        long amount = count <= 10 ? 10 : count;
-        return sortedFilms.subList(0, (int) amount);
+        return filmDbStorage.getPopularFilms(count);
 
     }
 

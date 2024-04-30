@@ -155,10 +155,17 @@ public class FilmDbStorage implements FilmStorage {
                     String deleteGenresQuery = "DELETE genre_film WHERE film_id = ?";
                     jdbcTemplate.update(deleteGenresQuery, film.getId());
 
-                    StringBuilder insertGenreQuery = new StringBuilder("INSERT INTO genre_film (film_id, genre_id) VALUES ");
-                    for (Genre genre : film.getGenres())
-                        insertGenreQuery.append("(").append(film.getId()).append(", ").append(genre.getId()).append("),");
-                    jdbcTemplate.update(insertGenreQuery.substring(0, insertGenreQuery.length() - 1));
+                    Map<Long, Genre> genres = new HashMap<>();
+                    for (Genre genre: film.getGenres())
+                        genres.put(genre.getId(), genre);
+
+                    if (!genres.isEmpty()) {
+                        StringBuilder insertGenreQuery = new StringBuilder("INSERT INTO genre_film (film_id, genre_id) VALUES ");
+                        for (Genre genre : genres.values())
+                            insertGenreQuery.append("(").append(film.getId()).append(", ").append(genre.getId()).append("),");
+                        jdbcTemplate.update(insertGenreQuery.substring(0, insertGenreQuery.length() - 1));
+                        film.setGenres(new ArrayList<>(genres.values()));
+                    }
                 }
             } else if (addedFilm.getGenres() != null) {
                 String deleteGenresQuery = "DELETE genre_film WHERE film_id = ?";
@@ -209,6 +216,29 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = new ArrayList<>();
 
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet("SELECT * FROM film");
+
+        while (filmRows.next()) {
+            films.add(getFilmFromSqlRow(filmRows));
+        }
+
+        if (films.isEmpty())
+            log.info("Фильмы не найдены.");
+
+        return films;
+    }
+
+
+    @Override
+    public List<Film> getPopularFilms(int count) {
+
+        List<Film> films = new ArrayList<>();
+
+        String popularFilms = "SELECT f.*, (SELECT COUNT(*) FROM likes WHERE film_id = f.film_id) popularity " +
+                              "FROM film f " +
+                              "ORDER BY popularity DESC " +
+                              "LIMIT ?";
+
+        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(popularFilms, count);
 
         while (filmRows.next()) {
             films.add(getFilmFromSqlRow(filmRows));
@@ -302,6 +332,14 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Long deleteLike(Long filmId, Long userId) {
+
+        SqlRowSet filmRow = jdbcTemplate.queryForRowSet("SELECT * FROM film WHERE film_id = ?", filmId);
+        if (!filmRow.next())
+            throw new NotFoundException("Фильм с id = " + filmId + " не найден!");
+
+        SqlRowSet userRow = jdbcTemplate.queryForRowSet("SELECT * FROM users WHERE user_id = ?", userId);
+        if (!userRow.next())
+            throw new NotFoundException("Пользователь с id = " + filmId + " не найден!");
 
         String deleteLikeQuery = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
         int amount = jdbcTemplate.update(deleteLikeQuery, filmId, userId);

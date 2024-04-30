@@ -85,8 +85,6 @@ public class UserService {
             message = "Неправильный формат электронной почты!";
         else if (user.getBirthday().isAfter(LocalDate.now()))
             message = "Неверно указана дата рождения!";
-        else if (user.getName().isBlank())
-            message = "Имя пользователя отсутствует!";
 
         if (!message.isBlank()) {
             throw new ValidationException(message);
