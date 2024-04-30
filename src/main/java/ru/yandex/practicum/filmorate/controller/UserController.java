@@ -147,6 +147,10 @@ public class UserController {
 
     }
 
+    /**
+     * Эндпоинт. Метод возвращает ленту событий пользователя id .
+     * @return
+     */
     @GetMapping("/users/{id}/feed")
     public List<Event> getUserFeed(@PathVariable long id) {
         return userService.getUserFeed(id);

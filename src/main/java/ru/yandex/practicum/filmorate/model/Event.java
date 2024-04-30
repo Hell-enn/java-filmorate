@@ -6,6 +6,18 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+/**
+ * Класс Event - бизнес-сущность. Необходим для
+ * последующего создания объектов для каждого действия пользователя
+ * со свойствами:
+ * - идентификатор (eventId)
+ * - отметка времени (timestamp)
+ * - тип события (eventType)
+ * - операция (operation)
+ * - идентификатор пользователя (userId)
+ * - идентификатор сущности (entityId).
+ */
+
 @Data
 @AllArgsConstructor
 public class Event {

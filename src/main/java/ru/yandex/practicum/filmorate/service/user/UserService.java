@@ -166,6 +166,12 @@ public class UserService {
 
     }
 
+
+    /**
+     * Метод возвращает ленту событий пользователя по его id из хранилища.
+     * @param id
+     * @return
+     */
     public List<Event> getUserFeed(long id) {
         return userDbStorage.getUserFeed(id);
     }
