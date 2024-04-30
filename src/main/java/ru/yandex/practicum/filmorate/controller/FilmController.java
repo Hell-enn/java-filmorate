@@ -26,6 +26,7 @@ public class FilmController {
      * Эндпоинт. Метод добавляяет новый фильм в список с
      * помощью соответствующего метода интерфеса хранилища -
      * FilmStorage. В случае успеха возвращает добавленный объект.
+     *
      * @param film
      * @return
      */
@@ -48,6 +49,7 @@ public class FilmController {
      * Эндпоинт. Метод обновляет фильм в списке с
      * помощью соответствующего метода интерфеса хранилища -
      * FilmStorage. В случае успеха возвращает обновлённый объект.
+     *
      * @param film
      * @return
      */
@@ -63,6 +65,7 @@ public class FilmController {
 
     /**
      * Эндпоинт. Метод возвращает список фильмов.
+     *
      * @return
      */
     @GetMapping("/films")
@@ -78,6 +81,7 @@ public class FilmController {
 
     /**
      * Эндпоинт. Метод возвращает объект фильма по его id.
+     *
      * @return
      */
     @GetMapping("/films/{id}")
@@ -88,6 +92,16 @@ public class FilmController {
             log.debug("Возвращаем фильм \"{}\"!", film.getName());
         return filmService.getFilm(id);
 
+    }
+
+
+    /**
+     * Эндпоинт. Удаляет Фильм с filmId
+     */
+    @DeleteMapping("/films/{id}")
+    public void deleteFilm(@PathVariable(name = "id") long filmId) {
+        log.info("Удаление фильма по id: {}", filmId);
+        filmService.deleteFilm(filmId);
     }
 
 
@@ -111,7 +125,7 @@ public class FilmController {
      */
     @DeleteMapping("/films/{id}/like/{userId}")
     public void deleteLike(@PathVariable long id,
-                        @PathVariable long userId) {
+                           @PathVariable long userId) {
 
         log.debug("Пользователь с id = " + userId + " удаляет лайк с фильма с id = " + id + "!");
         filmService.deleteLike(userId, id);

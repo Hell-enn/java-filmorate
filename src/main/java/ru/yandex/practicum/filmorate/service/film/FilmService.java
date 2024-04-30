@@ -26,6 +26,7 @@ public class FilmService {
     /**
      * Метод добавляет фильм в список в случае, если он там отсутствует.
      * В противном случае возвращает null.
+     *
      * @param film
      * @return
      */
@@ -44,6 +45,7 @@ public class FilmService {
     /**
      * Метод обновляет фильм в списке в случае, если он там присутствует.
      * В противном случае выбрасывает исключение типа ValidationException.
+     *
      * @param film
      * @return
      */
@@ -56,6 +58,7 @@ public class FilmService {
 
     /**
      * Метод возвращает список фильмов из хранилища.
+     *
      * @return
      */
     public List<Film> getFilms() {
@@ -66,12 +69,21 @@ public class FilmService {
 
 
     /**
+     * Метод удаляет фильм с filmId из хранилища
+     */
+    public void deleteFilm(long filmId) {
+        filmDbStorage.deleteFilm(filmId);
+    }
+
+
+    /**
      * Закрытый служебный метод проверяет объект типа Film
      * на соответствие ряду условий. Используется впоследствие
      * для валидации объекта типа Film при попытке его добавления
      * или обновления в списке.
      * В случае неудачи выбрасывает исключение ValidationException
      * с сообщением об ошибке.
+     *
      * @param film
      */
     private void validateFilm(Film film) {
@@ -92,6 +104,7 @@ public class FilmService {
     /**
      * Метод добавляет в список лайков объекта film
      * id объекта user.
+     *
      * @param userId
      * @param filmId
      */
@@ -109,6 +122,7 @@ public class FilmService {
     /**
      * Метод удаляет из списка лайков объекта film
      * id объекта user.
+     *
      * @param userId
      * @param filmId
      */
@@ -126,6 +140,7 @@ public class FilmService {
     /**
      * Метод возвращает набор id 10 самых популярных
      * фильмов.
+     *
      * @return
      */
     public List<Film> getPopularFilms(int count) {
@@ -137,6 +152,7 @@ public class FilmService {
 
     /**
      * Метод возвращает объект фильма по его id из хранилища.
+     *
      * @param id
      * @return
      */
