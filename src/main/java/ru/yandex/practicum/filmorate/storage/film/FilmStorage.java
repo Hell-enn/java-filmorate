@@ -96,4 +96,11 @@ public interface FilmStorage {
      */
     Set<Genre> getFilmGenres(int filmId);
 
+    /**
+     * Метод возвращает спикок общих фильмов для пользователей с id user1Id и user2Id.
+     * @param id
+     * @param otherId
+     */
+    public List<Film> getCommonFilms(long id, long otherId);
+
 }
