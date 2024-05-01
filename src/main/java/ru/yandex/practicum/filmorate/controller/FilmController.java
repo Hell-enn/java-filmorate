@@ -145,4 +145,17 @@ public class FilmController {
         return filmService.getPopularFilms(count);
 
     }
+
+    /**
+     * Метод возвращает спикок общих фильмов для пользователей с id user1Id и user2Id.
+     * @param userId
+     * @param friendId
+     */
+    @GetMapping("/films/common")
+    public List<Film> getCommonFilms(@RequestParam long userId,
+                                     @RequestParam long friendId) {
+
+        return filmService.getCommonFilms(userId, friendId);
+
+    }
 }
