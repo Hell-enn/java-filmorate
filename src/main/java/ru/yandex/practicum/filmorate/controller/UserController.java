@@ -25,6 +25,7 @@ public class UserController {
      * Эндпоинт. Метод добавляет нового пользователя в список с
      * помощью соответствующего метода интерфеса хранилища -
      * UserStorage. В случае успеха возвращает добавленный объект.
+     *
      * @param user
      * @return
      */
@@ -48,6 +49,7 @@ public class UserController {
      * если он в нём присутствует. Иначе выбрасывает исключение
      * ValidateException с сообщением об ошибке.
      * В случае успеха возвращает обновлённый объект.
+     *
      * @param user
      * @return
      */
@@ -63,6 +65,7 @@ public class UserController {
 
     /**
      * Эндпоинт. Метод возвращает список пользователей.
+     *
      * @return
      */
     @GetMapping("/users")
@@ -77,7 +80,18 @@ public class UserController {
 
 
     /**
+     * Эндпоинт. Удаляет пользователя с userId
+     */
+    @DeleteMapping("/users/{id}")
+    public void deleteUser(@PathVariable(name = "id") long userId) {
+        log.info("Удаление фильма по id: {}", userId);
+        userService.deletUser(userId);
+    }
+
+
+    /**
      * Эндпоинт. Метод возвращает объект пользователя по его id.
+     *
      * @return
      */
     @GetMapping("/users/{id}")
@@ -94,11 +108,12 @@ public class UserController {
     /**
      * Эндпоинт. Метод добавляет в друзья пользователя с friendId
      * пользователю с id и наоборот.
+     *
      * @return
      */
     @PutMapping("/users/{id}/friends/{friendId}")
     public User addFriend(@PathVariable long id,
-                               @PathVariable long friendId) {
+                          @PathVariable long friendId) {
 
         return userService.addFriend(id, friendId);
 
@@ -108,11 +123,12 @@ public class UserController {
     /**
      * Эндпоинт. Метод удаляет из друзей пользователя с friendId
      * у пользователя с id и наоборот.
+     *
      * @return
      */
     @DeleteMapping("/users/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable long id,
-                          @PathVariable long friendId) {
+                             @PathVariable long friendId) {
 
         log.debug("Пользователь с id = " + id + " удаляет из друзей пользователя с id = " + friendId + "!");
         userService.deleteFriend(id, friendId);
@@ -122,6 +138,7 @@ public class UserController {
 
     /**
      * Эндпоинт. Метод возвращает список друзей пользователя с id.
+     *
      * @return
      */
     @GetMapping("/users/{id}/friends")
@@ -136,6 +153,7 @@ public class UserController {
     /**
      * Эндпоинт. Метод возвращает список общих друзей двух
      * пользователей - с id и otherId.
+     *
      * @return
      */
     @GetMapping("/users/{id}/friends/common/{otherId}")

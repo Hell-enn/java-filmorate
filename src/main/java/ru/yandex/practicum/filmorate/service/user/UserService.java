@@ -28,6 +28,7 @@ public class UserService {
      * если он в нём отсутствует. Иначе выбрасывает исключение
      * ValidateException с сообщением об ошибке.
      * В случае успеха возвращает добавленный объект.
+     *
      * @param user
      * @return
      */
@@ -45,6 +46,7 @@ public class UserService {
      * если он в нём присутствует. Иначе выбрасывает исключение
      * ValidateException с сообщением об ошибке.
      * В случае успеха возвращает обновлённый объект.
+     *
      * @param user
      * @return
      */
@@ -55,6 +57,7 @@ public class UserService {
 
     /**
      * Метод возвращает список пользователей из хранилища.
+     *
      * @return
      */
     public List<User> getUsers() {
@@ -65,12 +68,21 @@ public class UserService {
 
 
     /**
+     * Метод удаляет пользователя с userId из хранилеща
+     */
+    public void deletUser(long userId) {
+        userDbStorage.deleteUser(userId);
+    }
+
+
+    /**
      * Закрытый служебный метод проверяет объект типа User
      * на соответствие ряду условий. Используется впоследствие
      * для валидации объекта типа User при попытке его добавления
      * или обновления в списке.
      * В случае неудачи выбрасывает исключение ValidationException
      * с сообщением об ошибке.
+     *
      * @param user
      */
     private void validateUser(User user) {
@@ -96,6 +108,7 @@ public class UserService {
     /**
      * Метод добавляет в список друзей объекта userFrom
      * id объекта userTo и наоборот.
+     *
      * @param userFromId
      * @param userToId
      */
@@ -115,6 +128,7 @@ public class UserService {
     /**
      * Метод удаляет из списка друзей объекта userFrom
      * id объекта userTo и наоборот.
+     *
      * @param followingUserId
      * @param followedUserId
      */
@@ -125,6 +139,7 @@ public class UserService {
 
     /**
      * Метод возвращает список друзей пользователя с id.
+     *
      * @param userId
      * @return
      */
@@ -141,6 +156,7 @@ public class UserService {
     /**
      * Метод возвращает набор id общих друзей для двух
      * объектов типа User, переданных в качестве аргументов.
+     *
      * @param user1Id
      * @param user2Id
      * @return
@@ -152,6 +168,7 @@ public class UserService {
 
     /**
      * Метод возвращает объект пользователя по его id из хранилища.
+     *
      * @param id
      * @return
      */

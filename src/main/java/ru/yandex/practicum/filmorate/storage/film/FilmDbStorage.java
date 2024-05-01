@@ -109,8 +109,8 @@ public class FilmDbStorage implements FilmStorage {
             Film addedFilm = getFilm(filmRows.getLong("film_id"));
             if (!film.getName().equals(addedFilm.getName())) {
                 String nameQuery = "UPDATE film " +
-                                   "SET name = ? " +
-                                   "WHERE film_id = ?;";
+                        "SET name = ? " +
+                        "WHERE film_id = ?;";
                 jdbcTemplate.update(nameQuery, film.getName(), film.getId());
             }
 
@@ -131,15 +131,15 @@ public class FilmDbStorage implements FilmStorage {
 
             if (!film.getReleaseDate().equals(addedFilm.getReleaseDate())) {
                 String dateQuery = "UPDATE film " +
-                                   "SET release_date = ? " +
-                                   "WHERE film_id = ?;";
+                        "SET release_date = ? " +
+                        "WHERE film_id = ?;";
                 jdbcTemplate.update(dateQuery, film.getReleaseDate(), film.getId());
             }
 
             if (film.getDuration() != addedFilm.getDuration()) {
                 String durationQuery = "UPDATE film " +
-                            "SET duration = ? " +
-                            "WHERE film_id = ?;";
+                        "SET duration = ? " +
+                        "WHERE film_id = ?;";
                 jdbcTemplate.update(durationQuery, film.getDuration(), film.getId());
             }
 
@@ -156,7 +156,7 @@ public class FilmDbStorage implements FilmStorage {
                     jdbcTemplate.update(deleteGenresQuery, film.getId());
 
                     Map<Long, Genre> genres = new HashMap<>();
-                    for (Genre genre: film.getGenres())
+                    for (Genre genre : film.getGenres())
                         genres.put(genre.getId(), genre);
 
                     if (!genres.isEmpty()) {
@@ -234,9 +234,9 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = new ArrayList<>();
 
         String popularFilms = "SELECT f.*, (SELECT COUNT(*) FROM likes WHERE film_id = f.film_id) popularity " +
-                              "FROM film f " +
-                              "ORDER BY popularity DESC " +
-                              "LIMIT ?";
+                "FROM film f " +
+                "ORDER BY popularity DESC " +
+                "LIMIT ?";
 
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet(popularFilms, count);
 
@@ -254,6 +254,7 @@ public class FilmDbStorage implements FilmStorage {
     /**
      * Закрытый служебный метод используется для получения объекта
      * фильма из строки, полученной из базы данных (таблица 'film').
+     *
      * @param filmRows
      * @return
      */
@@ -284,16 +285,16 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         String genresQuery = "SELECT g.* " +
-                             "FROM genre_film gf " +
-                             "JOIN genre g ON gf.genre_id = g.genre_id " +
-                             "WHERE gf.film_id = ?";
+                "FROM genre_film gf " +
+                "JOIN genre g ON gf.genre_id = g.genre_id " +
+                "WHERE gf.film_id = ?";
 
         SqlRowSet genresRows = jdbcTemplate.queryForRowSet(genresQuery, filmId);
 
         while (genresRows.next()) {
             genres.add(new Genre(
-                            genresRows.getLong("genre_id"),
-                            genresRows.getString("name")));
+                    genresRows.getLong("genre_id"),
+                    genresRows.getString("name")));
         }
 
         Film film = new Film(filmId, filmName, description, releaseDate, duration, rating, new ArrayList<>(genres));
@@ -358,9 +359,9 @@ public class FilmDbStorage implements FilmStorage {
 
         Set<Like> likes = new HashSet<>();
         SqlRowSet likesRows = jdbcTemplate.queryForRowSet("SELECT f.film_id, user_id " +
-                                                              "FROM film f " +
-                                                              "LEFT JOIN likes l on f.film_id = l.film_id " +
-                                                              "WHERE f.film_id = ?", filmId);
+                "FROM film f " +
+                "LEFT JOIN likes l on f.film_id = l.film_id " +
+                "WHERE f.film_id = ?", filmId);
 
         while (likesRows.next()) {
             Like like = new Like(

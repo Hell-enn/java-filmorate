@@ -42,18 +42,18 @@ public class UserDbStorage implements UserStorage {
         String insertUserQuery =
                 "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
 
-         KeyHolder keyHolder = new GeneratedKeyHolder();
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-         jdbcTemplate.update(connection -> {
-         PreparedStatement stmt = connection.prepareStatement(insertUserQuery, new String[]{"user_id"});
-         stmt.setString(1, user.getEmail());
-         stmt.setString(2, user.getLogin());
-         stmt.setString(3, user.getName());
-         stmt.setDate(4, Date.valueOf(user.getBirthday()));
-         return stmt;
-         }, keyHolder);
+        jdbcTemplate.update(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(insertUserQuery, new String[]{"user_id"});
+            stmt.setString(1, user.getEmail());
+            stmt.setString(2, user.getLogin());
+            stmt.setString(3, user.getName());
+            stmt.setDate(4, Date.valueOf(user.getBirthday()));
+            return stmt;
+        }, keyHolder);
 
-         user.setId(keyHolder.getKey().longValue());
+        user.setId(keyHolder.getKey().longValue());
 
         log.debug("Добавлен новый пользователь: {}!", user.getLogin());
 
@@ -168,6 +168,7 @@ public class UserDbStorage implements UserStorage {
     /**
      * Закрытый служебный метод используется для получения объекта
      * пользователя из строки, полученной из базы данных (таблица 'users').
+     *
      * @param userRows
      * @return
      */
@@ -200,8 +201,8 @@ public class UserDbStorage implements UserStorage {
         }
 
         String friendshipQuery = "SELECT * " +
-                                 "FROM friendship " +
-                                 "WHERE following_user_id = ? AND followed_user_id = ?";
+                "FROM friendship " +
+                "WHERE following_user_id = ? AND followed_user_id = ?";
 
         SqlRowSet followingFriendRows = jdbcTemplate.queryForRowSet(friendshipQuery, followingFriendId, followedFriendId);
         SqlRowSet followedFriendRows = jdbcTemplate.queryForRowSet(friendshipQuery, followedFriendId, followingFriendId);
@@ -255,8 +256,8 @@ public class UserDbStorage implements UserStorage {
         }
 
         String friendshipQuery = "SELECT * " +
-                                 "FROM friendship " +
-                                 "WHERE following_user_id = ? AND followed_user_id = ?";
+                "FROM friendship " +
+                "WHERE following_user_id = ? AND followed_user_id = ?";
 
         SqlRowSet followingFriendRows = jdbcTemplate.queryForRowSet(friendshipQuery, followingFriendId, followedFriendId);
         SqlRowSet followedFriendRows = jdbcTemplate.queryForRowSet(friendshipQuery, followedFriendId, followingFriendId);
@@ -296,9 +297,9 @@ public class UserDbStorage implements UserStorage {
         List<User> friends = new ArrayList<>();
 
         String friendsQuery = "SELECT u.* " +
-                              "FROM friendship f " +
-                              "JOIN users u ON u.user_id = f.followed_user_id " +
-                              "WHERE following_user_id = ?";
+                "FROM friendship f " +
+                "JOIN users u ON u.user_id = f.followed_user_id " +
+                "WHERE following_user_id = ?";
 
         SqlRowSet friendsOfUserRows = jdbcTemplate.queryForRowSet(friendsQuery, userId);
 
@@ -323,7 +324,7 @@ public class UserDbStorage implements UserStorage {
 
         List<User> commonFriends = new ArrayList<>();
 
-        for (User friend: friends1) {
+        for (User friend : friends1) {
             if (friends2.contains(friend))
                 commonFriends.add(friend);
         }
@@ -331,5 +332,3 @@ public class UserDbStorage implements UserStorage {
         return commonFriends;
     }
 }
-
-
