@@ -331,4 +331,5 @@ public class UserDbStorage implements UserStorage {
 
         return commonFriends;
     }
+
 }

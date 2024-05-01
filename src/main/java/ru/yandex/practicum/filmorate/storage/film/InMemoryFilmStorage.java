@@ -93,4 +93,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Set<Genre> getFilmGenres(int filmId) {
         return null;
     }
+
+    @Override
+    public List<Film> getCommonFilms(long id, long otherId)  {
+        return null;
+    }
 }

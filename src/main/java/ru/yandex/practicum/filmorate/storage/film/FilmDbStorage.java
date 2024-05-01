@@ -10,10 +10,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Like;
-import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -400,6 +397,39 @@ public class FilmDbStorage implements FilmStorage {
             log.info("Информация о жанрах для фильма с id = {} отсутсвует!", filmId);
 
         return genres;
+
+    }
+
+    public List<Film> getCommonFilms(long id, long otherId) {
+
+        String userQuery = "SELECT * FROM users WHERE user_id = ?";
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet(userQuery, id);
+        SqlRowSet user2Rows = jdbcTemplate.queryForRowSet(userQuery, otherId);
+        if (!userRows.next() || !user2Rows.next()) {
+            log.debug("Пользователь не найден!");
+            throw new NotFoundException("Пользователь не найден!");
+        }
+
+        List<Film> commonFilms = new ArrayList<>();
+
+        String filmQuery = "(SELECT f.* " +
+                "FROM likes l " +
+                "JOIN film f ON l.film_id = f.film_id " +
+                "WHERE user_id = ?)" +
+                "INTERSECT" +
+                "(SELECT f.* " +
+                "FROM likes l " +
+                "JOIN film f ON l.film_id = f.film_id " +
+                "WHERE user_id = ?)";
+
+        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmQuery, id, otherId);
+
+        while (filmRows.next()) {
+            commonFilms.add(getFilmFromSqlRow(filmRows));
+        }
+
+        log.info("Список общих фильмов");
+        return commonFilms;
 
     }
 }
