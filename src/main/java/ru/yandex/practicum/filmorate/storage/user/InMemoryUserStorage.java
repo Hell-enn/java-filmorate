@@ -85,4 +85,5 @@ public class InMemoryUserStorage implements UserStorage {
     public List<User> getCommonFriends(long user1Id, long user2Id) {
         return null;
     }
+
 }
