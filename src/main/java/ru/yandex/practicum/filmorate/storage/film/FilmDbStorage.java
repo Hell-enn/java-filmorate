@@ -410,28 +410,24 @@ public class FilmDbStorage implements FilmStorage {
             throw new NotFoundException("Пользователь не найден!");
         }
 
-        List<Film> filmListUser1 = new ArrayList<>();
-        List<Film> filmListUser2 = new ArrayList<>();
         List<Film> commonFilms = new ArrayList<>();
 
-        String filmQuery = "SELECT * FROM FILM f WHERE FILM_ID IN (SELECT FILM_ID  FROM LIKES l" +
-                " WHERE USER_ID  =  ? GROUP BY FILM_ID)";
-        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmQuery, id);
-        SqlRowSet film2Rows = jdbcTemplate.queryForRowSet(filmQuery, otherId);
+        String filmQuery = "(SELECT f.* " +
+                "FROM likes l " +
+                "JOIN film f ON l.film_id = f.film_id " +
+                "WHERE user_id = ?)" +
+                "INTERSECT" +
+                "(SELECT f.* " +
+                "FROM likes l " +
+                "JOIN film f ON l.film_id = f.film_id " +
+                "WHERE user_id = ?)";
+
+        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmQuery, id, otherId);
 
         while (filmRows.next()) {
-            Film film = getFilmFromSqlRow(filmRows);
-            filmListUser1.add(film);
-        }
-        while (film2Rows.next()) {
-            Film film = getFilmFromSqlRow(film2Rows);
-            filmListUser2.add(film);
+            commonFilms.add(getFilmFromSqlRow(filmRows));
         }
 
-        for (Film f : filmListUser1) {
-            if (filmListUser2.contains(f))
-                commonFilms.add(f);
-        }
         log.info("Список общих фильмов");
         return commonFilms;
 
