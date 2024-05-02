@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 
 import java.util.*;
@@ -20,10 +22,12 @@ import java.util.*;
 public class ReviewService {
 
     private final ReviewStorage reviewDbStorage;
+    private final EventStorage eventDbStorage;
 
     /**
      * Метод добавляет отзыв в список в случае, если он там отсутствует.
      * В противном случае возвращает null.
+     *
      * @param review
      * @return
      */
@@ -35,31 +39,38 @@ public class ReviewService {
             return null;
         }
 
-        return reviewDbStorage.addReview(review);
+        Review addedReview = reviewDbStorage.addReview(review);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), review.getUserId(), "REVIEW", "ADD", review.getReviewId()));
+        return addedReview;
     }
 
 
     /**
      * Метод обновляет отзыв в списке в случае, если он там присутствует.
      * В противном случае выбрасывает исключение типа ValidationException.
+     *
      * @param review
      * @return
      */
     public Review putReview(Review review) {
 
-        return reviewDbStorage.updateReview(review);
+        Review updatedReview = reviewDbStorage.updateReview(review);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), review.getUserId(), "REVIEW", "UPDATE", review.getReviewId()));
+        return updatedReview;
 
     }
 
 
     /**
      * Метод удаляет отзыв из хранилища.
+     *
      * @param id
      * @return
      */
     public void deleteReview(long id) {
-
+        Review review = getReview(id);
         reviewDbStorage.deleteReview(id);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), review.getUserId(), "REVIEW", "REMOVE", review.getReviewId()));
 
     }
 
@@ -67,6 +78,7 @@ public class ReviewService {
     /**
      * Метод возвращает отзыв из списка в случае, если он там присутствует.
      * В противном случае возвращает null.
+     *
      * @param reviewId
      * @return
      */
@@ -79,6 +91,7 @@ public class ReviewService {
 
     /**
      * Метод возвращает список всех отзывов из хранилища.
+     *
      * @return
      */
     public List<Review> getReviews(long reviewId, int count) {
@@ -95,6 +108,7 @@ public class ReviewService {
      * или обновления в списке.
      * В случае неудачи выбрасывает исключение ValidationException
      * с сообщением об ошибке.
+     *
      * @param review
      */
     private void validateReview(Review review) {
@@ -113,6 +127,7 @@ public class ReviewService {
     /**
      * Метод добавляет в список оценок объекта review
      * id объекта user.
+     *
      * @param reviewId
      * @param userId
      * @param isUseful
@@ -131,6 +146,7 @@ public class ReviewService {
     /**
      * Метод удаляет из списка оценок отзыва с reviewId
      * лайк от пользователя с userId.
+     *
      * @param reviewId
      * @param userId
      */
@@ -148,6 +164,7 @@ public class ReviewService {
     /**
      * Метод удаляет из списка оценок отзыва с reviewId
      * дизлайк от пользователя с userId.
+     *
      * @param reviewId
      * @param userId
      */
