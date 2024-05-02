@@ -173,6 +173,7 @@ public class FilmService {
 
     /**
      * Метод возвращает спикок общих фильмов для пользователей с id user1Id и user2Id.
+     *
      * @param id
      * @param otherId
      */

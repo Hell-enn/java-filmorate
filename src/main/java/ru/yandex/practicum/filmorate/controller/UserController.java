@@ -167,6 +167,7 @@ public class UserController {
 
     /**
      * Эндпоинт. Метод возвращает ленту событий пользователя id .
+     *
      * @return
      */
     @GetMapping("/users/{id}/feed")

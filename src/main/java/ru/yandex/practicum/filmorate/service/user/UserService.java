@@ -125,7 +125,7 @@ public class UserService {
             throw new NotFoundException("Пользователь " + userToId + " отсутствует в списке!");
 
         User user = userDbStorage.addFriend(userFromId, userToId);
-        eventDbStorage.addEvent(new Event(System.currentTimeMillis(),userFromId, "FRIEND", "ADD", userToId));
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), userFromId, "FRIEND", "ADD", userToId));
         return user;
     }
 
@@ -190,6 +190,7 @@ public class UserService {
 
     /**
      * Метод возвращает ленту событий пользователя по его id из хранилища.
+     *
      * @param id
      * @return
      */

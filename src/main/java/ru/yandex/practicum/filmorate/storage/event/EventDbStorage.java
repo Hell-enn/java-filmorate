@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.model.Event;
 import java.util.List;
 
 @Component("eventDbStorage")
-public class EventDbStorage implements EventStorage{
+public class EventDbStorage implements EventStorage {
 
     JdbcTemplate jdbcTemplate;
 
@@ -16,7 +16,7 @@ public class EventDbStorage implements EventStorage{
     }
 
     @Override
-    public List<Event> getUserFeed(long id){
+    public List<Event> getUserFeed(long id) {
         String getFeedQuery = "SELECT * FROM events WHERE user_id = ?;";
         return jdbcTemplate.query(getFeedQuery, (rs, rowNum) -> {
             int eventId = rs.getInt("event_id");
@@ -31,7 +31,7 @@ public class EventDbStorage implements EventStorage{
     }
 
     @Override
-    public void addEvent(Event event){
+    public void addEvent(Event event) {
         String insertEventQuery = "INSERT INTO events (timestamp, user_id, event_type, operation, entity_id)" +
                 "VALUES (?, ?, ?, ?, ?);";
 
