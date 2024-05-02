@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 
 import java.util.*;
@@ -20,6 +22,7 @@ import java.util.*;
 public class ReviewService {
 
     private final ReviewStorage reviewDbStorage;
+    private final EventStorage eventDbStorage;
 
     /**
      * Метод добавляет отзыв в список в случае, если он там отсутствует.
@@ -35,7 +38,9 @@ public class ReviewService {
             return null;
         }
 
-        return reviewDbStorage.addReview(review);
+        Review addedReview = reviewDbStorage.addReview(review);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), review.getUserId(), "REVIEW", "ADD", review.getReviewId()));
+        return addedReview;
     }
 
 
@@ -47,7 +52,9 @@ public class ReviewService {
      */
     public Review putReview(Review review) {
 
-        return reviewDbStorage.updateReview(review);
+        Review updatedReview = reviewDbStorage.updateReview(review);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), review.getUserId(), "REVIEW", "UPDATE", review.getReviewId()));
+        return updatedReview;
 
     }
 
@@ -58,8 +65,9 @@ public class ReviewService {
      * @return
      */
     public void deleteReview(long id) {
-
+        Review review = getReview(id);
         reviewDbStorage.deleteReview(id);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), review.getUserId(), "REVIEW", "REMOVE", review.getReviewId()));
 
     }
 

@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.event.EventDbStorage;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -21,6 +24,7 @@ import java.util.List;
 public class UserService {
 
     private final UserStorage userDbStorage;
+    private final EventStorage eventDbStorage;
 
 
     /**
@@ -120,8 +124,9 @@ public class UserService {
         if (!userDbStorage.containsUser(userToId))
             throw new NotFoundException("Пользователь " + userToId + " отсутствует в списке!");
 
-        return userDbStorage.addFriend(userFromId, userToId);
-
+        User user = userDbStorage.addFriend(userFromId, userToId);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(),userFromId, "FRIEND", "ADD", userToId));
+        return user;
     }
 
 
@@ -134,6 +139,7 @@ public class UserService {
      */
     public void deleteFriend(long followingUserId, long followedUserId) {
         userDbStorage.deleteFriend(followingUserId, followedUserId);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), followingUserId, "FRIEND", "REMOVE", followedUserId));
     }
 
 
@@ -180,5 +186,15 @@ public class UserService {
 
         return user;
 
+    }
+
+    /**
+     * Метод возвращает ленту событий пользователя по его id из хранилища.
+     * @param id
+     * @return
+     */
+    public List<Event> getUserFeed(long id) {
+        getUser(id);
+        return eventDbStorage.getUserFeed(id);
     }
 }

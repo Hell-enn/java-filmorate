@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
@@ -21,6 +23,7 @@ import java.util.*;
 public class FilmService {
 
     private final FilmStorage filmDbStorage;
+    private final EventStorage eventDbStorage;
 
 
     /**
@@ -116,6 +119,7 @@ public class FilmService {
             throw new NotFoundException("Фильм отсутствует в списке!");
 
         filmDbStorage.addLike(filmId, userId);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), userId, "LIKE", "ADD", filmId));
     }
 
 
@@ -134,6 +138,7 @@ public class FilmService {
             throw new NotFoundException("Фильм отсутствует в списке!");
 
         filmDbStorage.deleteLike(filmId, userId);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), userId, "LIKE", "REMOVE", filmId));
     }
 
 
