@@ -432,6 +432,57 @@ public class FilmDbStorage implements FilmStorage {
         return commonFilms;
 
     }
+
+    public List<Film> getFilmsBySubstring(String query, List<String> by) {
+        List<Film> filmList = new ArrayList<>();
+
+        if (by.contains("director") & by.contains("title")) {
+
+            String filmsQuery = "SELECT * " +
+                    "FROM FILM f " +
+                    "WHERE (NAME ILIKE '%" + query + "%' OR DIRECTOR ILIKE '%" + query + "%') " +
+                    "ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC";
+
+            SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmsQuery);
+
+            while (filmRows.next()) {
+                filmList.add(getFilmFromSqlRow(filmRows));
+            }
+            return filmList;
+
+        } else if (by.contains("director")) {
+
+            String filmsQuery = "SELECT * " +
+                    "FROM FILM f " +
+                    "WHERE DIRECTOR ILIKE '%" + query + "%' " +
+                    "ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC";
+
+            SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmsQuery);
+
+            while (filmRows.next()) {
+                filmList.add(getFilmFromSqlRow(filmRows));
+            }
+            return filmList;
+
+        } else if (by.contains("title")) {
+
+            String filmsQuery = "SELECT * " +
+                    "FROM FILM f " +
+                    "WHERE NAME ILIKE '%" + query + "%' " +
+                    "ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC";
+
+            SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmsQuery);
+
+            while (filmRows.next()) {
+                filmList.add(getFilmFromSqlRow(filmRows));
+            }
+            return filmList;
+
+        } else {
+            log.debug("Не корректные параметры запроса");
+            throw new BadRequestException("Не корректные параметры запроса");
+        }
+    }
 }
 
 

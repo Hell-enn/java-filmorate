@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
@@ -156,6 +157,24 @@ public class FilmController {
                                      @RequestParam long friendId) {
 
         return filmService.getCommonFilms(userId, friendId);
+
+    }
+
+    /**
+     * Метод возвращает спикок фильмов содержащих подстроку с сортировкой по популярности.
+     * @param query текст для поиска
+     * @param by параметры поиска - по названию или режиссеру, или вместе
+     */
+    @GetMapping("/films/search")
+    public List<Film> getFilmsBySubstring(@RequestParam String query,
+                                          @RequestParam List<String> by) {
+
+        if (query.isBlank() | by.isEmpty()) {
+            log.debug("Не корректные параметры запроса");
+            throw new BadRequestException("Не корректные параметры запроса");
+        }
+
+        return filmService.getFilmsBySubstring(query, by);
 
     }
 

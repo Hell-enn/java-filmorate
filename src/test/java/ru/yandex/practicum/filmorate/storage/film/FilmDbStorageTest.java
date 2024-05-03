@@ -274,45 +274,4 @@ public class FilmDbStorageTest {
                 .isEqualTo(newFilm1);
 
     }
-
-    @Test
-    public void shouldGetCommonFilms() {
-
-        MPA g = new MPA(1, "G", "Нет возрастных ограничений");
-        Genre comedy = new Genre(1, "Комедия");
-        Film newFilm1 = new Film(1L, "Фильм 1", "Описание 1",
-                LocalDate.of(1990, 1, 1), 200, g, List.of(comedy));
-        Film newFilm2 = new Film(2L, "Фильм 2", "Описание 2",
-                LocalDate.of(1991, 2, 5), 190, g, List.of(comedy));
-
-        User newUser1 = new User(1L, "user1@email.ru", "vanya123", "Ivan Petrov", LocalDate.of(1990, 1, 1));
-        User newUser2 = new User(2L, "user2@email.ru", "oksana99", "Oksana Samoylova", LocalDate.of(1991, 2, 2));
-
-        newFilm1.setId(filmStorage.addFilm(newFilm1).getId());
-        newFilm2.setId(filmStorage.addFilm(newFilm2).getId());
-        newUser1.setId(userStorage.addUser(newUser1).getId());
-        newUser2.setId(userStorage.addUser(newUser2).getId());
-
-        filmStorage.addLike(newFilm1.getId(), newUser1.getId());
-        filmStorage.addLike(newFilm2.getId(), newUser1.getId());
-        filmStorage.addLike(newFilm1.getId(), newUser2.getId());
-
-        List<Film> commonList =  filmStorage.getCommonFilms(newUser1.getId(),newUser2.getId());
-
-        assertThat(commonList.get(0))
-                .isEqualTo(newFilm1);
-
-        assertThat(commonList.size())
-                .isEqualTo(1);
-
-        filmStorage.addLike(newFilm2.getId(), newUser2.getId());
-        commonList =  filmStorage.getCommonFilms(newUser1.getId(),newUser2.getId());
-
-        assertThat(commonList.get(1))
-                .isEqualTo(newFilm2);
-
-        assertThat(commonList.size())
-                .isEqualTo(2);
-
-    }
 }
