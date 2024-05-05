@@ -62,7 +62,7 @@ public interface FilmStorage {
      * Метод возвращает список из count фильмов, отсортированных по популярности.
      * @return
      */
-    List<Film> getPopularFilms(int count);
+    List<Film> getPopularFilms(long limit, long genreId, int year);
 
 
     /**

@@ -148,10 +148,8 @@ public class FilmService {
      *
      * @return
      */
-    public List<Film> getPopularFilms(int count) {
-
-        return filmDbStorage.getPopularFilms(count);
-
+    public List<Film> getPopularFilms(long limit, long genreId, int year) {
+        return filmDbStorage.getPopularFilms(limit, genreId, year);
     }
 
 
