@@ -275,9 +275,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(long limit, long genreId, int year) {
         SqlRowSet rowSet;
-        StringBuilder sql = new StringBuilder("SELECT f.* ")
-                .append("FROM film AS f ")
-                .append("LEFT JOIN likes AS l ON f.film_id = l.film_id ");
+        StringBuilder sql = new StringBuilder("SELECT f.* FROM film AS f LEFT JOIN likes AS l ON f.film_id = l.film_id ");
         List<Object> params = new ArrayList<>();
         if (genreId != 0) {
             sql.append("LEFT JOIN genre_film AS gf ON f.film_id = gf.film_id ");
@@ -293,7 +291,7 @@ public class FilmDbStorage implements FilmStorage {
                 params.add(year);
             }
         }
-        sql.append("GROUP BY f.film_id ").append("ORDER BY COUNT(l.user_id) DESC ").append("LIMIT ?;");
+        sql.append("GROUP BY f.film_id ORDER BY COUNT(l.user_id) DESC LIMIT ?;");
         params.add(limit);
         rowSet = jdbcTemplate.queryForRowSet(sql.toString(), params.toArray());
 
