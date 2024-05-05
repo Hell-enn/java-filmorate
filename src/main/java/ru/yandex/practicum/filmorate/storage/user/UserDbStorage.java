@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -10,7 +11,9 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -26,13 +29,13 @@ public class UserDbStorage implements UserStorage {
 
     private final Logger log = LoggerFactory.getLogger(UserDbStorage.class);
     private final JdbcTemplate jdbcTemplate;
+    @Autowired
+    private FilmStorage filmDbStorage;
 
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-
-    @SuppressWarnings("checkstyle:Regexp")
     @Override
     public User addUser(User user) {
 
@@ -330,6 +333,43 @@ public class UserDbStorage implements UserStorage {
         }
 
         return commonFriends;
+    }
+
+
+    @Override
+    public List<Film> getRecommendations(long userId) {
+
+        SqlRowSet userRow = jdbcTemplate.queryForRowSet("SELECT * FROM users WHERE user_id = user_id");
+        if (!userRow.next())
+            throw new NotFoundException("Пользователь не найден!");
+
+        List<Film> films = new ArrayList<>();
+
+        long mostMatchingUserId = 0;
+        String mostMatchingUserQuery = "SELECT l.user_id, COUNT(l.film_id) amount " +
+                "FROM likes l " +
+                "WHERE (SELECT COUNT(film_id) FROM likes WHERE user_id = ? AND film_id = l.film_id) > 0 " +
+                "AND l.user_id <> ? " +
+                "GROUP BY l.user_id " +
+                "ORDER BY amount DESC " +
+                "LIMIT 1";
+
+        SqlRowSet mostMatchingUserRow = jdbcTemplate.queryForRowSet(mostMatchingUserQuery, userId, userId);
+        if (mostMatchingUserRow.next())
+            mostMatchingUserId = mostMatchingUserRow.getLong("user_id");
+
+        if (mostMatchingUserId != 0) {
+            String suitableFilms = "SELECT f.* " +
+                    "FROM likes l " +
+                    "JOIN film f ON l.film_id = f.film_id " +
+                    "WHERE l.film_id NOT IN (SELECT film_id FROM likes WHERE user_id = ?) AND l.user_id = ? ";
+
+            SqlRowSet suitableFilmRows = jdbcTemplate.queryForRowSet(suitableFilms, userId, mostMatchingUserId);
+            while (suitableFilmRows.next())
+                films.add(filmDbStorage.getFilmFromSqlRow(suitableFilmRows));
+        }
+
+        return films;
     }
 
 }
