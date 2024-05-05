@@ -29,17 +29,19 @@ public class FilmDbStorageTest {
     public void createContextBefore() {
         filmStorage = new FilmDbStorage(jdbcTemplate);
         userStorage = new UserDbStorage(jdbcTemplate);
-    }
 
+        jdbcTemplate.update("DELETE FROM directors");
+        jdbcTemplate.update("INSERT INTO directors (director_id, name) VALUES (1, 'Режисcер 1'), (2, 'Режисер 2')");
+    }
 
     @Test
     public void findFilmByIdTest() {
 
         MPA g = new MPA(1, "G", "Нет возрастных ограничений");
         List<Genre> genres = List.of(new Genre(1, "Комедия"), new Genre(2, "Драма"));
-
+        List<Director> directors = List.of(new Director(1L, "Режисcер 1"));
         Film newFilm = new Film(6L, "Фильм 1", "Описание 1",
-                LocalDate.of(1990, 1, 1), 200, g, genres);
+                LocalDate.of(1990, 1, 1), 200, g, genres, directors);
 
         newFilm.setId(filmStorage.addFilm(newFilm).getId());
         Film savedFilm = filmStorage.getFilm(newFilm.getId());
@@ -51,15 +53,14 @@ public class FilmDbStorageTest {
 
     }
 
-
     @Test
     public void deleteFilmTest() {
 
         MPA g = new MPA(1, "G", "Нет возрастных ограничений");
         List<Genre> genres = List.of(new Genre(1, "Комедия"), new Genre(1, "Драма"));
-
+        List<Director> directors = List.of(new Director(1L, "Режисcер 1"));
         Film newFilm = new Film(6L, "Фильм 1", "Описание 1",
-                LocalDate.of(1990, 1, 1), 200, g, genres);
+                LocalDate.of(1990, 1, 1), 200, g, genres, directors);
 
         filmStorage.addFilm(newFilm);
         filmStorage.deleteFilm(6L);
@@ -69,15 +70,14 @@ public class FilmDbStorageTest {
 
     }
 
-
     @Test
     public void containsFilmTest() {
 
         MPA g = new MPA(1, "G", "Нет возрастных ограничений");
         List<Genre> genres = List.of(new Genre(1, "Комедия"), new Genre(2, "Драма"));
-
+        List<Director> directors = List.of(new Director(1L, "Режисcер 1"));
         Film newFilm = new Film(6L, "Фильм 1", "Описание 1",
-                LocalDate.of(1990, 1, 1), 200, g, genres);
+                LocalDate.of(1990, 1, 1), 200, g, genres, directors);
 
         newFilm.setId(filmStorage.addFilm(newFilm).getId());
 
@@ -85,7 +85,6 @@ public class FilmDbStorageTest {
                 .isTrue();
 
     }
-
 
     @Test
     public void getFilmsTest() {
@@ -123,16 +122,22 @@ public class FilmDbStorageTest {
 
         jdbcTemplate.update("DELETE FROM FILM");
 
+        List<Director> director1 = List.of(new Director(1L, "Режисcер 1"));
+        List<Director> director2 = List.of(new Director(1L, "Режисcер 2"));
+        List<Director> director3 = List.of(new Director(1L, "Режисcер 3"));
+        List<Director> director4 = List.of(new Director(1L, "Режисcер 4"));
+        List<Director> director5 = List.of(new Director(1L, "Режисcер 5"));
+
         Film newFilm1 = new Film(6L, "Фильм 6", "Описание 6",
-                LocalDate.of(1990, 1, 1), 200, g, genres1);
+                LocalDate.of(1990, 1, 1), 200, g, genres1, director1);
         Film newFilm2 = new Film(7L, "Фильм 7", "Описание 7",
-                LocalDate.of(1991, 2, 5), 190, pg, genres2);
+                LocalDate.of(1991, 2, 5), 190, pg, genres2,  director2);
         Film newFilm3 = new Film(8L, "Фильм 8", "Описание 8",
-                LocalDate.of(1992, 3, 4), 180, pg13, genres3);
+                LocalDate.of(1992, 3, 4), 180, pg13, genres3,  director3);
         Film newFilm4 = new Film(9L, "Фильм 9", "Описание 9",
-                LocalDate.of(1993, 4, 3), 170, r, genres4);
+                LocalDate.of(1993, 4, 3), 170, r, genres4,  director4);
         Film newFilm5 = new Film(10L, "Фильм 10", "Описание 10",
-                LocalDate.of(1994, 5, 2), 160, nc17, genres5);
+                LocalDate.of(1994, 5, 2), 160, nc17, genres5,  director5);
 
         List<Film> films = List.of(newFilm1, newFilm2, newFilm3, newFilm4, newFilm5);
 
@@ -148,7 +153,6 @@ public class FilmDbStorageTest {
                 .isEqualTo(savedFilms);
 
     }
-
 
     @Test
     public void getLikesTest() {
@@ -172,18 +176,24 @@ public class FilmDbStorageTest {
         List<Genre> genres4 = List.of(documentary);
         List<Genre> genres5 = List.of(cartoon, comedy);
 
+        List<Director> director1 = List.of(new Director(1L, "Режисcер 1"));
+        List<Director> director2 = List.of(new Director(1L, "Режисcер 2"));
+        List<Director> director3 = List.of(new Director(1L, "Режисcер 3"));
+        List<Director> director4 = List.of(new Director(1L, "Режисcер 4"));
+        List<Director> director5 = List.of(new Director(1L, "Режисcер 5"));
+
         jdbcTemplate.update("DELETE FROM film");
 
         Film newFilm1 = new Film(1L, "Фильм 1", "Описание 1",
-                LocalDate.of(1990, 1, 1), 200, g, genres1);
+                LocalDate.of(1990, 1, 1), 200, g, genres1, director1);
         Film newFilm2 = new Film(2L, "Фильм 2", "Описание 2",
-                LocalDate.of(1991, 2, 5), 190, pg, genres2);
+                LocalDate.of(1991, 2, 5), 190, pg, genres2, director2);
         Film newFilm3 = new Film(3L, "Фильм 3", "Описание 3",
-                LocalDate.of(1992, 3, 4), 180, pg13, genres3);
+                LocalDate.of(1992, 3, 4), 180, pg13, genres3, director3);
         Film newFilm4 = new Film(4L, "Фильм 4", "Описание 4",
-                LocalDate.of(1993, 4, 3), 170, r, genres4);
+                LocalDate.of(1993, 4, 3), 170, r, genres4, director4);
         Film newFilm5 = new Film(5L, "Фильм 5", "Описание 5",
-                LocalDate.of(1994, 5, 2), 160, nc17, genres5);
+                LocalDate.of(1994, 5, 2), 160, nc17, genres5, director5);
 
         newFilm1.setId(filmStorage.addFilm(newFilm1).getId());
         newFilm2.setId(filmStorage.addFilm(newFilm2).getId());
@@ -235,7 +245,6 @@ public class FilmDbStorageTest {
 
     }
 
-
     @Test
     public void updateFilmTest() {
 
@@ -255,10 +264,12 @@ public class FilmDbStorageTest {
         genres2.add(thriller);
         genres2.add(action);
 
+        List<Director> directors1 = List.of(new Director(1L, "Режиссёр 1"));
+
         jdbcTemplate.update("DELETE FROM film");
 
         Film newFilm1 = new Film(1L, "Фильм 1", "Описание 1",
-                LocalDate.of(1990, 1, 1), 200, g, genres1);
+                LocalDate.of(1990, 1, 1), 200, g, genres1, directors1);
 
         newFilm1.setId(filmStorage.addFilm(newFilm1).getId());
 
