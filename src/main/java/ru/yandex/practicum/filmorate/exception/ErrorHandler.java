@@ -17,7 +17,7 @@ import java.util.Map;
  * причин возникшей проблемы.
  */
 @RestControllerAdvice(assignableTypes = {FilmController.class, UserController.class, GenreController.class,
-                      RatingController.class, ReviewController.class})
+                      RatingController.class, ReviewController.class,  DirectorController.class})
 public class ErrorHandler {
 
     @ExceptionHandler

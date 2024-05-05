@@ -103,4 +103,5 @@ public interface FilmStorage {
      */
     public List<Film> getCommonFilms(long id, long otherId);
 
+    List<Film> getDirectorFilms(long directorId, String sortBy);
 }
