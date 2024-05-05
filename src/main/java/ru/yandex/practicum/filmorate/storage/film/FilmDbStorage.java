@@ -273,25 +273,37 @@ public class FilmDbStorage implements FilmStorage {
 
 
     @Override
-    public List<Film> getPopularFilms(int count) {
-
-        List<Film> films = new ArrayList<>();
-
-        String popularFilms = "SELECT f.*, (SELECT COUNT(*) FROM likes WHERE film_id = f.film_id) popularity " +
-                "FROM film f " +
-                "ORDER BY popularity DESC " +
-                "LIMIT ?";
-
-        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(popularFilms, count);
-
-        while (filmRows.next()) {
-            films.add(getFilmFromSqlRow(filmRows));
+    public List<Film> getPopularFilms(long limit, long genreId, int year) {
+        SqlRowSet rowSet;
+        StringBuilder sql = new StringBuilder("SELECT f.* FROM film AS f LEFT JOIN likes AS l ON f.film_id = l.film_id ");
+        List<Object> params = new ArrayList<>();
+        if (genreId != 0) {
+            sql.append("LEFT JOIN genre_film AS gf ON f.film_id = gf.film_id ");
+            sql.append("WHERE gf.genre_id = ? ");
+            params.add(genreId);
+            if (year != 0) {
+                sql.append("AND YEAR(f.release_date) = ? ");
+                params.add(year);
+            }
+        } else {
+            if (year != 0) {
+                sql.append("WHERE YEAR(f.release_date) = ? ");
+                params.add(year);
+            }
         }
+        sql.append("GROUP BY f.film_id ORDER BY COUNT(l.user_id) DESC LIMIT ?;");
+        params.add(limit);
+        rowSet = jdbcTemplate.queryForRowSet(sql.toString(), params.toArray());
 
-        if (films.isEmpty())
+        List<Film> popularFilms = new ArrayList<>();
+
+        while (rowSet.next()) {
+            popularFilms.add(getFilmFromSqlRow(rowSet));
+        }
+        if (popularFilms.isEmpty()) {
             log.info("Фильмы не найдены.");
-
-        return films;
+        }
+        return popularFilms;
     }
 
 
