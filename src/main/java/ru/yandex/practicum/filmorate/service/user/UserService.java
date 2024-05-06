@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -187,6 +188,7 @@ public class UserService {
 
     }
 
+
     /**
      * Метод возвращает ленту событий пользователя по его id из хранилища.
      *
@@ -196,5 +198,19 @@ public class UserService {
     public List<Event> getUserFeed(long id) {
         getUser(id);
         return eventDbStorage.getUserFeed(id);
+    }
+
+
+    /**
+     * Эндпоинт. Метод возвращает список фильмов, рекомендованных
+     * к просмотру пользователю с id, на основании оценок других
+     * пользователей со схожими интересами.
+     *
+     * @return
+     */
+    public List<Film> getRecommendations(long id) {
+
+        return userDbStorage.getRecommendations(id);
+
     }
 }

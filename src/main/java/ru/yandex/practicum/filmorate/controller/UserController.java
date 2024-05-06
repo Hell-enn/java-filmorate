@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
@@ -165,6 +166,7 @@ public class UserController {
 
     }
 
+
     /**
      * Эндпоинт. Метод возвращает ленту событий пользователя id .
      *
@@ -173,5 +175,20 @@ public class UserController {
     @GetMapping("/users/{id}/feed")
     public List<Event> getUserFeed(@PathVariable long id) {
         return userService.getUserFeed(id);
+    }
+
+
+    /**
+     * Эндпоинт. Метод возвращает список фильмов, рекомендованных
+     * к просмотру пользователю с id, на основании оценок других
+     * пользователей со схожими интересами.
+     *
+     * @return
+     */
+    @GetMapping("/users/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable long id) {
+
+        return userService.getRecommendations(id);
+
     }
 }

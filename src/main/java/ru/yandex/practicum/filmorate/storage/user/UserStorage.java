@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import java.util.List;
 
@@ -85,5 +86,14 @@ public interface UserStorage {
      * @param user2Id
      */
     List<User> getCommonFriends(long user1Id, long user2Id);
+
+
+    /**
+     * Метод возвращает список фильмов, рекомендованных
+     * к просмотру пользователю с id, на основании оценок других
+     * пользователей со схожими интересами.
+     * @param userId
+     */
+    List<Film> getRecommendations(long userId);
 
 }
