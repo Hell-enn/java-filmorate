@@ -109,4 +109,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film getFilmFromSqlRow(SqlRowSet filmRows) {
         return null;
     }
+
+    @Override
+    public List<Film> getFilmsBySubstring(String query, List<String> by) {
+        return null;
+    }
 }

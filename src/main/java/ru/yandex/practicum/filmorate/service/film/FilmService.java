@@ -181,6 +181,18 @@ public class FilmService {
 
     }
 
+    /**
+     * Метод возвращает спикок фильмов содержащих подстроку с сортировкой по популярности.
+     * @param query текст для поиска
+     * @param by параметры поиска - по названию или режиссеру, или вместе
+     */
+
+    public List<Film> getFilmsBySubstring(String query, List<String> by) {
+
+        return filmDbStorage.getFilmsBySubstring(query, by);
+
+    }
+
     public List<Film> getDirectorFilms(long directorId, String sortBy) {
         return filmDbStorage.getDirectorFilms(directorId, sortBy);
     }

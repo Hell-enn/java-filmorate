@@ -128,4 +128,6 @@ public interface FilmStorage {
      * @return
      */
     public Film getFilmFromSqlRow(SqlRowSet filmRows);
+
+    List<Film> getFilmsBySubstring(String query, List<String> by);
 }
