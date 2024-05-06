@@ -308,13 +308,13 @@ public class FilmDbStorage implements FilmStorage {
 
 
     /**
-     * Закрытый служебный метод используется для получения объекта
+     * Cлужебный метод используется для получения объекта
      * фильма из строки, полученной из базы данных (таблица 'film').
      *
      * @param filmRows
      * @return
      */
-    private Film getFilmFromSqlRow(SqlRowSet filmRows) {
+    public Film getFilmFromSqlRow(SqlRowSet filmRows) {
 
         int filmId = filmRows.getInt("film_id");
         String filmName = filmRows.getString("name");
@@ -511,7 +511,7 @@ public class FilmDbStorage implements FilmStorage {
 
         String sql;
         if ("year".equals(sortBy)) {
-            sql =   "SELECT f.* " +
+            sql = "SELECT f.* " +
                     "FROM film f " +
                     "LEFT JOIN film_directors fd ON f.film_id = fd.film_id " +
                     "WHERE fd.director_id = ? " +
