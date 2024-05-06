@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -10,6 +11,7 @@ import java.util.*;
  * UserStorage и хранит в операционной памяти информацию об объектах
  * типа User.
  */
+@SuppressWarnings("checkstyle:Regexp")
 @Component
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
@@ -86,4 +88,8 @@ public class InMemoryUserStorage implements UserStorage {
         return null;
     }
 
+    @Override
+    public List<Film> getRecommendations(long userId) {
+        return null;
+    }
 }

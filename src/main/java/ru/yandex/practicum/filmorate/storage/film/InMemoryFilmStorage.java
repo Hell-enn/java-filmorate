@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -102,6 +103,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public List<Film> getDirectorFilms(long directorId, String sortBy) {
         return new ArrayList<>();
+    }
+
+    @Override
+    public Film getFilmFromSqlRow(SqlRowSet filmRows) {
+        return null;
     }
 
     @Override
