@@ -100,12 +100,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmsBySubstring(String query, List<String> by) {
-        return null;
+    public List<Film> getDirectorFilms(long directorId, String sortBy) {
+        return new ArrayList<>();
     }
 
     @Override
-    public List<Film> getDirectorFilms(long directorId, String sortBy) {
-        return new ArrayList<>();
+    public List<Film> getFilmsBySubstring(String query, List<String> by) {
+        return null;
     }
 }

@@ -103,7 +103,7 @@ public interface FilmStorage {
      */
     public List<Film> getCommonFilms(long id, long otherId);
 
-    public List<Film> getFilmsBySubstring(String query, List<String> by);
-
     List<Film> getDirectorFilms(long directorId, String sortBy);
+
+    List<Film> getFilmsBySubstring(String query, List<String> by);
 }

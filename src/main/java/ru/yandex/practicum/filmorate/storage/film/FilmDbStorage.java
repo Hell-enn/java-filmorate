@@ -502,57 +502,6 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
-    public List<Film> getFilmsBySubstring(String query, List<String> by) {
-        List<Film> filmList = new ArrayList<>();
-
-        if (by.contains("director") & by.contains("title")) {
-
-            String filmsQuery = "SELECT * " +
-                    "FROM FILM f " +
-                    "WHERE (NAME ILIKE '%" + query + "%' OR DIRECTOR ILIKE '%" + query + "%') " +
-                    "ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC";
-
-            SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmsQuery);
-
-            while (filmRows.next()) {
-                filmList.add(getFilmFromSqlRow(filmRows));
-            }
-            return filmList;
-
-        } else if (by.contains("director")) {
-
-            String filmsQuery = "SELECT * " +
-                    "FROM FILM f " +
-                    "WHERE DIRECTOR ILIKE '%" + query + "%' " +
-                    "ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC";
-
-            SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmsQuery);
-
-            while (filmRows.next()) {
-                filmList.add(getFilmFromSqlRow(filmRows));
-            }
-            return filmList;
-
-        } else if (by.contains("title")) {
-
-            String filmsQuery = "SELECT * " +
-                    "FROM FILM f " +
-                    "WHERE NAME ILIKE '%" + query + "%' " +
-                    "ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC";
-
-            SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmsQuery);
-
-            while (filmRows.next()) {
-                filmList.add(getFilmFromSqlRow(filmRows));
-            }
-            return filmList;
-
-        } else {
-            log.debug("Не корректные параметры запроса");
-            throw new BadRequestException("Не корректные параметры запроса");
-        }
-    }
-
     @Override
     public List<Film> getDirectorFilms(long directorId, String sortBy) {
 
@@ -582,6 +531,62 @@ public class FilmDbStorage implements FilmStorage {
             films.add(getFilmFromSqlRow(filmsRows));
 
         return films;
+    }
+
+    @Override
+    public List<Film> getFilmsBySubstring(String query, List<String> by) {
+        List<Film> filmList = new ArrayList<>();
+
+        if (by.contains("director") & by.contains("title")) {
+
+            String filmsQuery = "SELECT * " +
+                    "FROM FILM f  " +
+                    "LEFT JOIN FILM_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE (f.NAME ILIKE '%" + query + "%' OR d.NAME ILIKE '%" + query + "%') " +
+                    "ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC";
+
+            SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmsQuery);
+
+            while (filmRows.next()) {
+                filmList.add(getFilmFromSqlRow(filmRows));
+            }
+            return filmList;
+
+        } else if (by.contains("director")) {
+
+            String filmsQuery = "SELECT * " +
+                    "FROM FILM f  " +
+                    "JOIN FILM_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
+                    "JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE  d.NAME ILIKE '%" + query + "%' " +
+                    "ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC";
+
+            SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmsQuery);
+
+            while (filmRows.next()) {
+                filmList.add(getFilmFromSqlRow(filmRows));
+            }
+            return filmList;
+
+        } else if (by.contains("title")) {
+
+            String filmsQuery = "SELECT * " +
+                    "FROM FILM f " +
+                    "WHERE NAME ILIKE '%" + query + "%' " +
+                    "ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC";
+
+            SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmsQuery);
+
+            while (filmRows.next()) {
+                filmList.add(getFilmFromSqlRow(filmRows));
+            }
+            return filmList;
+
+        } else {
+            log.debug("Не корректные параметры запроса");
+            throw new BadRequestException("Не корректные параметры запроса");
+        }
     }
 }
 
