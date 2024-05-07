@@ -110,14 +110,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 review.setFilmId(addedReview.getFilmId());
             }
 
-            String usefulnessQuery = "SELECT " +
-                    "                  (SELECT COUNT(is_useful) " +
-                    "                   FROM review_rate " +
-                    "                   WHERE review_id = ? AND is_useful = TRUE) " +
-                    "                   - " +
-                    "                  (SELECT COUNT(is_useful) " +
-                    "                   FROM review_rate " +
-                    "                   WHERE review_id = ? AND is_useful = FALSE) as usefulness";
+            String usefulnessQuery = "SELECT SUM(is_useful) FROM review_rate WHERE review_id = ?";
 
             SqlRowSet usefulnessRow = jdbcTemplate.queryForRowSet(usefulnessQuery, review.getReviewId(), review.getReviewId());
             if (usefulnessRow.next())
@@ -173,15 +166,12 @@ public class ReviewDbStorage implements ReviewStorage {
         if (!filmRow.next() && filmId != -1)
             throw new NotFoundException("Фильм с id = " + filmId + " не найден!");
 
-        StringBuilder reviewsQuery = new StringBuilder("SELECT r.*, " +
-                              "  (SELECT COUNT(is_useful) " +
-                              "  FROM review_rate " +
-                              "  WHERE review_id = r.review_id AND is_useful = TRUE) " +
-                              "  - " +
-                              "  (SELECT COUNT(is_useful) " +
-                              "  FROM review_rate " +
-                              "  WHERE review_id = r.review_id AND is_useful = FALSE) as usefulness " +
-                              "  FROM review r ");
+        StringBuilder reviewsQuery = new StringBuilder(
+                        "SELECT r.review_id, r.content, r.is_positive, r.user_id, r.film_id, SUM(rt.is_useful) " +
+                        "FROM review r " +
+                        "JOIN review_rate rt ON r.review_id = rt.review_id " +
+                        "WHERE r.review_id = ? " +
+                        "GROUP BY r.review_id, r.content, r.is_positive, r.user_id, r.film_id");
 
         if (filmId != -1) {
             reviewsQuery.append("WHERE film_id = ? ");
@@ -212,6 +202,7 @@ public class ReviewDbStorage implements ReviewStorage {
      * @param reviewRows
      * @return
      */
+    @SuppressWarnings("checkstyle:Regexp")
     private Review getReviewFromSqlRow(SqlRowSet reviewRows) {
 
         int reviewId = reviewRows.getInt("review_id");
@@ -221,14 +212,7 @@ public class ReviewDbStorage implements ReviewStorage {
         long filmId = reviewRows.getInt("film_id");
         int useful = 0;
 
-        String usefulnessQuery = "SELECT " +
-                                  "(SELECT COUNT(is_useful) " +
-                                  "FROM review_rate " +
-                                  "WHERE review_id = ? AND is_useful = TRUE)" +
-                                  "-" +
-                                  "(SELECT COUNT(is_useful) " +
-                                  "FROM review_rate " +
-                                  "WHERE review_id = ? AND is_useful = FALSE) as usefulness";
+        String usefulnessQuery = "SELECT SUM(is_useful) FROM review_rate WHERE review_id = ?";
 
         SqlRowSet usefulnessRows = jdbcTemplate.queryForRowSet(usefulnessQuery, reviewId, reviewId);
         if (usefulnessRows.next())
@@ -257,7 +241,8 @@ public class ReviewDbStorage implements ReviewStorage {
 
         String insertRateQuery = "INSERT INTO review_rate (review_id, user_id, is_useful) VALUES (?, ?, ?)";
         try {
-            jdbcTemplate.update(insertRateQuery, reviewId, userId, isUseful);
+            int useful = isUseful ? 1 : -1;
+            jdbcTemplate.update(insertRateQuery, reviewId, userId, useful);
             if (isUseful)
                 log.info("Лайк от пользователя с id {} добавлен отзыву с id {}!", userId, reviewQuery);
             else
@@ -281,7 +266,8 @@ public class ReviewDbStorage implements ReviewStorage {
             throw new NotFoundException("Оценка отзыва отсутствует!");
 
         String deleteRateQuery = "DELETE FROM review_rate WHERE review_id = ? AND user_id = ?";
-        int amount = jdbcTemplate.update(deleteRateQuery, reviewId, userId);
+        int useful = isUseful ? 1 : -1;
+        int amount = jdbcTemplate.update(deleteRateQuery, reviewId, useful);
 
         if (amount > 0)
             log.info("Оценка от пользователя с id {} удалена с отзыва с id {}!", userId, reviewId);
