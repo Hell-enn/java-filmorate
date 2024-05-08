@@ -539,12 +539,14 @@ public class FilmDbStorage implements FilmStorage {
 
         if (by.contains("director") & by.contains("title")) {
 
-            String filmsQuery = "SELECT * " +
+            String filmsQuery = "SELECT f.*, COUNT(l.FILM_ID) top " +
                     "FROM FILM f  " +
                     "LEFT JOIN FILM_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
                     "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
-                    "WHERE (f.NAME ILIKE '%" + query + "%' OR d.NAME ILIKE '%" + query + "%') " +
-                    "ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC";
+                    "LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
+                    "WHERE  (d.NAME ILIKE '%" + query +"%' OR f.NAME ILIKE '%" + query + "%') " +
+                    "GROUP BY f.FILM_ID " +
+                    "ORDER BY top DESC";
 
             SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmsQuery);
 
@@ -555,12 +557,14 @@ public class FilmDbStorage implements FilmStorage {
 
         } else if (by.contains("director")) {
 
-            String filmsQuery = "SELECT * " +
+            String filmsQuery = "SELECT f.*, COUNT(l.FILM_ID) top " +
                     "FROM FILM f  " +
                     "JOIN FILM_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
                     "JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
-                    "WHERE  d.NAME ILIKE '%" + query + "%' " +
-                    "ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC";
+                    "LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
+                    "WHERE  d.NAME ILIKE '%" + query +"%' " +
+                    "GROUP BY f.FILM_ID " +
+                    "ORDER BY top DESC";
 
             SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmsQuery);
 
@@ -571,10 +575,12 @@ public class FilmDbStorage implements FilmStorage {
 
         } else if (by.contains("title")) {
 
-            String filmsQuery = "SELECT * " +
+            String filmsQuery = "SELECT f.*, COUNT(l.FILM_ID) top " +
                     "FROM FILM f " +
+                    "LEFT JOIN LIKES l ON f.FILM_ID =l.FILM_ID " +
                     "WHERE NAME ILIKE '%" + query + "%' " +
-                    "ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC";
+                    "GROUP BY f.FILM_ID " +
+                    "ORDER BY top DESC";
 
             SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmsQuery);
 
