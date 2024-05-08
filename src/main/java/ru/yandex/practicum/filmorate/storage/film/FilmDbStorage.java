@@ -481,15 +481,13 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Film> commonFilms = new ArrayList<>();
 
-        String filmQuery = "(SELECT f.* " +
+        String filmQuery = "SELECT  f.* , count(l.FILM_ID) AS top " +
                 "FROM likes l " +
                 "JOIN film f ON l.film_id = f.film_id " +
-                "WHERE user_id = ?)" +
-                "INTERSECT" +
-                "(SELECT f.* " +
-                "FROM likes l " +
-                "JOIN film f ON l.film_id = f.film_id " +
-                "WHERE user_id = ?)";
+                "WHERE l.USER_ID = ? OR l.USER_ID  = ? " +
+                "GROUP BY f.FILM_ID " +
+                "having count(distinct l.USER_ID) = 2 " +
+                "ORDER BY top desc ";
 
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet(filmQuery, id, otherId);
 
