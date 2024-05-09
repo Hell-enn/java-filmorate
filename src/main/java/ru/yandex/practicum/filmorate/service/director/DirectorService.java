@@ -29,6 +29,7 @@ public class DirectorService {
     }
 
     public Director updateDirector(Director director) {
+        validateDirector(director);
         log.debug("Режиссер обновлен: {}", director.getName());
         return directorDbStorage.updateDirector(director);
     }
