@@ -165,7 +165,6 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
 
-    @SuppressWarnings("checkstyle:Regexp")
     @Override
     public List<Review> getReviews(Long filmId, int count) {
 
@@ -220,7 +219,6 @@ public class ReviewDbStorage implements ReviewStorage {
      * @param reviewRows
      * @return
      */
-    @SuppressWarnings("checkstyle:Regexp")
     private Review getReviewFromSqlRow(SqlRowSet reviewRows) {
 
         int reviewId = reviewRows.getInt("review_id");
