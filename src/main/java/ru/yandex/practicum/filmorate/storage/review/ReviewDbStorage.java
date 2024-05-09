@@ -110,18 +110,20 @@ public class ReviewDbStorage implements ReviewStorage {
                 review.setFilmId(addedReview.getFilmId());
             }
 
-            String usefulnessQuery = "SELECT " +
-                    "                  (SELECT COUNT(is_useful) " +
-                    "                   FROM review_rate " +
-                    "                   WHERE review_id = ? AND is_useful = TRUE) " +
-                    "                   - " +
-                    "                  (SELECT COUNT(is_useful) " +
-                    "                   FROM review_rate " +
-                    "                   WHERE review_id = ? AND is_useful = FALSE) as usefulness";
+            String usefulReviewQuery = "SELECT COUNT(is_useful) as usefulness FROM review_rate WHERE review_id = ? AND is_useful = true;";
+            String unusefulReviewQuery = "SELECT COUNT(is_useful) as usefulness FROM review_rate WHERE review_id = ? AND is_useful = false;";
 
-            SqlRowSet usefulnessRow = jdbcTemplate.queryForRowSet(usefulnessQuery, review.getReviewId(), review.getReviewId());
-            if (usefulnessRow.next())
-                review.setUseful(usefulnessRow.getInt("usefulness"));
+            SqlRowSet usefulRow = jdbcTemplate.queryForRowSet(usefulReviewQuery, review.getReviewId());
+            SqlRowSet unusefulRow = jdbcTemplate.queryForRowSet(unusefulReviewQuery, review.getReviewId());
+
+            int useful = 0;
+            int unuseful = 0;
+            if (usefulRow.next())
+                useful = usefulRow.getInt("usefulness");
+            if (unusefulRow.next())
+                unuseful = unusefulRow.getInt("usefulness");
+
+            review.setUseful(useful - unuseful);
         }
         return review;
     }
@@ -163,25 +165,31 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
 
+    @SuppressWarnings("checkstyle:Regexp")
     @Override
     public List<Review> getReviews(Long filmId, int count) {
 
         List<Review> reviews = new ArrayList<>();
 
         String filmQuery = "SELECT * FROM film WHERE film_id = ?";
-        SqlRowSet filmRow = jdbcTemplate.queryForRowSet(filmQuery, filmId);
-        if (!filmRow.next() && filmId != -1)
-            throw new NotFoundException("Фильм с id = " + filmId + " не найден!");
 
+        if (filmId != -1) {
+            SqlRowSet filmRow = jdbcTemplate.queryForRowSet(filmQuery, filmId);
+            if (!filmRow.next())
+                throw new NotFoundException("Фильм с id = " + filmId + " не найден!");
+        }
+
+        //Я не знаю, каким образом можно перекроить этот запрос с использованием JOIN.
+        //Разве что разбить его на 3 отдельных запроса к БД, но это ведь ещё сильнее сожрет производительность...
         StringBuilder reviewsQuery = new StringBuilder("SELECT r.*, " +
-                              "  (SELECT COUNT(is_useful) " +
-                              "  FROM review_rate " +
-                              "  WHERE review_id = r.review_id AND is_useful = TRUE) " +
-                              "  - " +
-                              "  (SELECT COUNT(is_useful) " +
-                              "  FROM review_rate " +
-                              "  WHERE review_id = r.review_id AND is_useful = FALSE) as usefulness " +
-                              "  FROM review r ");
+                "  (SELECT COUNT(is_useful) " +
+                "  FROM review_rate " +
+                "  WHERE review_id = r.review_id AND is_useful = TRUE) " +
+                "  - " +
+                "  (SELECT COUNT(is_useful) " +
+                "  FROM review_rate " +
+                "  WHERE review_id = r.review_id AND is_useful = FALSE) as usefulness " +
+                "  FROM review r ");
 
         if (filmId != -1) {
             reviewsQuery.append("WHERE film_id = ? ");
@@ -212,6 +220,7 @@ public class ReviewDbStorage implements ReviewStorage {
      * @param reviewRows
      * @return
      */
+    @SuppressWarnings("checkstyle:Regexp")
     private Review getReviewFromSqlRow(SqlRowSet reviewRows) {
 
         int reviewId = reviewRows.getInt("review_id");
@@ -219,22 +228,21 @@ public class ReviewDbStorage implements ReviewStorage {
         boolean isPositive = reviewRows.getBoolean("is_positive");
         long userId = reviewRows.getInt("user_id");
         long filmId = reviewRows.getInt("film_id");
+
+        String usefulReviewQuery = "SELECT COUNT(is_useful) as usefulness FROM review_rate WHERE review_id = ? AND is_useful = true;";
+        String unusefulReviewQuery = "SELECT COUNT(is_useful) as usefulness FROM review_rate WHERE review_id = ? AND is_useful = false;";
+
+        SqlRowSet usefulRow = jdbcTemplate.queryForRowSet(usefulReviewQuery, reviewId);
+        SqlRowSet unusefulRow = jdbcTemplate.queryForRowSet(unusefulReviewQuery, reviewId);
+
         int useful = 0;
+        int unuseful = 0;
+        if (usefulRow.next())
+            useful = usefulRow.getInt("usefulness");
+        if (unusefulRow.next())
+            unuseful = unusefulRow.getInt("usefulness");
 
-        String usefulnessQuery = "SELECT " +
-                                  "(SELECT COUNT(is_useful) " +
-                                  "FROM review_rate " +
-                                  "WHERE review_id = ? AND is_useful = TRUE)" +
-                                  "-" +
-                                  "(SELECT COUNT(is_useful) " +
-                                  "FROM review_rate " +
-                                  "WHERE review_id = ? AND is_useful = FALSE) as usefulness";
-
-        SqlRowSet usefulnessRows = jdbcTemplate.queryForRowSet(usefulnessQuery, reviewId, reviewId);
-        if (usefulnessRows.next())
-            useful = usefulnessRows.getInt("usefulness");
-
-        Review review = new Review(reviewId, content, isPositive, userId, filmId, useful);
+        Review review = new Review(reviewId, content, isPositive, userId, filmId, useful - unuseful);
 
         log.info("Найден отзыв на фильм с id {} от пользователя с id {}", filmId, userId);
 
