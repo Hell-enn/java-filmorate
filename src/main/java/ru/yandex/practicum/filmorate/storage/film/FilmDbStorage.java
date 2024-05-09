@@ -96,7 +96,7 @@ public class FilmDbStorage implements FilmStorage {
 
         if (directors != null && !directors.isEmpty()) {
             StringBuilder directorsQuery = new StringBuilder("SELECT COUNT(*) as amount FROM directors WHERE director_id IN (");
-            for (Director director: directors) {
+            for (Director director : directors) {
                 directorsQuery.append(director.getId()).append(",");
             }
             SqlRowSet directorsRow = jdbcTemplate.queryForRowSet(
@@ -279,7 +279,7 @@ public class FilmDbStorage implements FilmStorage {
 
 
     @Override
-    public List<Film> getPopularFilms(long limit, long genreId, int year) {
+    public List<Film> getPopularFilms(long limit, long genreId, int year){
         SqlRowSet rowSet;
         StringBuilder sql = new StringBuilder("SELECT f.* FROM film AS f LEFT JOIN likes AS l ON f.film_id = l.film_id ");
         List<Object> params = new ArrayList<>();
