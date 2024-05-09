@@ -93,16 +93,22 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Director> directors = film.getDirectors();
         List<Long> directorsId = new ArrayList<>();
-        if (directors != null) {
-            for (Director director : directors) {
 
-                SqlRowSet directorsRows = jdbcTemplate.queryForRowSet("SELECT * FROM directors WHERE director_id = ?", director.getId());
-                if (!directorsRows.next()) {
-
+        if (directors != null && !directors.isEmpty()) {
+            StringBuilder directorsQuery = new StringBuilder("SELECT COUNT(*) as amount FROM directors WHERE director_id IN (");
+            for (Director director: directors) {
+                directorsQuery.append(director.getId()).append(",");
+            }
+            SqlRowSet directorsRow = jdbcTemplate.queryForRowSet(
+                    directorsQuery.substring(0, directorsQuery.length() - 1) + ");");
+            if (directorsRow.next()) {
+                if (directorsRow.getInt("amount") < directors.size()) {
                     jdbcTemplate.update("DELETE FROM film WHERE film_id = ?", filmId);
                     throw new BadRequestException("Ошибка жанра в запросе!");
-
                 }
+            }
+
+            for (Director director : directors) {
 
                 Long directorId = director.getId();
                 if (!directorsId.contains(directorId)) {
