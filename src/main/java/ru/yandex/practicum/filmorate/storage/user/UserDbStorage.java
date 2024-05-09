@@ -339,30 +339,31 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<Film> getRecommendations(long userId) {
 
-        SqlRowSet userRow = jdbcTemplate.queryForRowSet("SELECT * FROM users WHERE user_id = user_id");
+        SqlRowSet userRow = jdbcTemplate.queryForRowSet("SELECT * FROM users WHERE user_id = ?", userId);
         if (!userRow.next())
             throw new NotFoundException("Пользователь не найден!");
 
         List<Film> films = new ArrayList<>();
 
         long mostMatchingUserId = 0;
-        String mostMatchingUserQuery = "SELECT l.user_id, COUNT(l.film_id) amount " +
-                "FROM likes l " +
-                "WHERE (SELECT COUNT(film_id) FROM likes WHERE user_id = ? AND film_id = l.film_id) > 0 " +
-                "AND l.user_id <> ? " +
-                "GROUP BY l.user_id " +
-                "ORDER BY amount DESC " +
+        String mostMatchingUserQuery = "SELECT l2.user_id, COUNT(l2.film_id) AS amount\n" +
+                "FROM likes l1\n" +
+                "JOIN likes l2 ON l1.film_id = l2.film_id AND l1.user_id <> l2.user_id\n" +
+                "WHERE l1.user_id = ?\n" +
+                "GROUP BY l2.user_id\n" +
+                "ORDER BY amount DESC\n" +
                 "LIMIT 1";
 
-        SqlRowSet mostMatchingUserRow = jdbcTemplate.queryForRowSet(mostMatchingUserQuery, userId, userId);
+        SqlRowSet mostMatchingUserRow = jdbcTemplate.queryForRowSet(mostMatchingUserQuery, userId);
         if (mostMatchingUserRow.next())
             mostMatchingUserId = mostMatchingUserRow.getLong("user_id");
 
         if (mostMatchingUserId != 0) {
-            String suitableFilms = "SELECT f.* " +
-                    "FROM likes l " +
-                    "JOIN film f ON l.film_id = f.film_id " +
-                    "WHERE l.film_id NOT IN (SELECT film_id FROM likes WHERE user_id = ?) AND l.user_id = ? ";
+            String suitableFilms = "SELECT f.*\n" +
+                    "FROM likes l\n" +
+                    "JOIN film f ON l.film_id = f.film_id\n" +
+                    "LEFT JOIN likes l2 ON l.film_id = l2.film_id AND l2.user_id = ?\n" +
+                    "WHERE l2.film_id IS NULL AND l.user_id = ?";
 
             SqlRowSet suitableFilmRows = jdbcTemplate.queryForRowSet(suitableFilms, userId, mostMatchingUserId);
             while (suitableFilmRows.next())
