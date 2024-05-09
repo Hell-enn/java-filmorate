@@ -96,7 +96,7 @@ public class FilmDbStorage implements FilmStorage {
 
         if (directors != null && !directors.isEmpty()) {
             StringBuilder directorsQuery = new StringBuilder("SELECT COUNT(*) as amount FROM directors WHERE director_id IN (");
-            for (Director director: directors) {
+            for (Director director : directors) {
                 directorsQuery.append(director.getId()).append(",");
             }
             SqlRowSet directorsRow = jdbcTemplate.queryForRowSet(
@@ -548,7 +548,7 @@ public class FilmDbStorage implements FilmStorage {
                     "LEFT JOIN FILM_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
                     "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
                     "LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
-                    "WHERE  (d.NAME ILIKE '%" + query +"%' OR f.NAME ILIKE '%" + query + "%') " +
+                    "WHERE  (d.NAME ILIKE '%" + query + "%' OR f.NAME ILIKE '%" + query + "%') " +
                     "GROUP BY f.FILM_ID " +
                     "ORDER BY top DESC";
 
@@ -566,7 +566,7 @@ public class FilmDbStorage implements FilmStorage {
                     "JOIN FILM_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
                     "JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
                     "LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
-                    "WHERE  d.NAME ILIKE '%" + query +"%' " +
+                    "WHERE  d.NAME ILIKE '%" + query + "%' " +
                     "GROUP BY f.FILM_ID " +
                     "ORDER BY top DESC";
 

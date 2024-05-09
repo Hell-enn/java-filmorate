@@ -28,7 +28,6 @@ public class ReviewController {
      * @param review
      * @return
      */
-    @SuppressWarnings("checkstyle:Regexp")
     @PostMapping("/reviews")
     public Review postReview(@Valid @RequestBody Review review) {
 

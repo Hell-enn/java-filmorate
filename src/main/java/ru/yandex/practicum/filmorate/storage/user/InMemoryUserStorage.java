@@ -11,7 +11,6 @@ import java.util.*;
  * UserStorage и хранит в операционной памяти информацию об объектах
  * типа User.
  */
-@SuppressWarnings("checkstyle:Regexp")
 @Component
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
