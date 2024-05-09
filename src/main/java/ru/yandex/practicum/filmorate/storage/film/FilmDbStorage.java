@@ -96,7 +96,7 @@ public class FilmDbStorage implements FilmStorage {
 
         if (directors != null && !directors.isEmpty()) {
             StringBuilder directorsQuery = new StringBuilder("SELECT COUNT(*) as amount FROM directors WHERE director_id IN (");
-            for (Director director: directors) {
+            for (Director director : directors) {
                 directorsQuery.append(director.getId()).append(",");
             }
             SqlRowSet directorsRow = jdbcTemplate.queryForRowSet(
