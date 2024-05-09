@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS genre_film (
 CREATE TABLE IF NOT EXISTS review_rate (
     review_id INTEGER REFERENCES review(review_id) ON DELETE CASCADE,
     user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
-    is_useful INTEGER DEFAULT 1,
+    is_useful BOOLEAN DEFAULT TRUE,
     PRIMARY KEY (review_id, user_id)
 );
 
