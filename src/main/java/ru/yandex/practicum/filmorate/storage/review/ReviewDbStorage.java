@@ -178,23 +178,17 @@ public class ReviewDbStorage implements ReviewStorage {
                 throw new NotFoundException("Фильм с id = " + filmId + " не найден!");
         }
 
-        //Я не знаю, каким образом можно перекроить этот запрос с использованием JOIN.
-        //Разве что разбить его на 3 отдельных запроса к БД, но это ведь ещё сильнее сожрет производительность...
         StringBuilder reviewsQuery = new StringBuilder("SELECT r.*, " +
-                "  (SELECT COUNT(is_useful) " +
-                "  FROM review_rate " +
-                "  WHERE review_id = r.review_id AND is_useful = TRUE) " +
-                "  - " +
-                "  (SELECT COUNT(is_useful) " +
-                "  FROM review_rate " +
-                "  WHERE review_id = r.review_id AND is_useful = FALSE) as usefulness " +
-                "  FROM review r ");
+                                                       "SUM(CASE WHEN rr.is_useful = TRUE THEN 1 ELSE 0 END) - " +
+                                                       "SUM(CASE WHEN rr.is_useful = FALSE THEN 1 ELSE 0 END) as usefulness " +
+                                                       "FROM review r " +
+                                                       "LEFT JOIN review_rate rr ON r.review_id = rr.review_id ");
 
         if (filmId != -1) {
             reviewsQuery.append("WHERE film_id = ? ");
         }
 
-        reviewsQuery.append("ORDER BY usefulness DESC LIMIT ?");
+        reviewsQuery.append("GROUP BY r.review_id ORDER BY usefulness DESC LIMIT ?");
 
         SqlRowSet reviewRows;
         if (filmId != -1)

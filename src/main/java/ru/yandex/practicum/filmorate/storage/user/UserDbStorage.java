@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -25,16 +26,12 @@ import java.util.*;
  * которая взаимодействует с SQL базой данных для работы с сущностями-пользователями.
  */
 @Component("userDbStorage")
+@RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
 
     private final Logger log = LoggerFactory.getLogger(UserDbStorage.class);
     private final JdbcTemplate jdbcTemplate;
-    @Autowired
-    private FilmStorage filmDbStorage;
-
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final FilmStorage filmDbStorage;
 
     @Override
     public User addUser(User user) {
@@ -47,15 +44,19 @@ public class UserDbStorage implements UserStorage {
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(insertUserQuery, new String[]{"user_id"});
-            stmt.setString(1, user.getEmail());
-            stmt.setString(2, user.getLogin());
-            stmt.setString(3, user.getName());
-            stmt.setDate(4, Date.valueOf(user.getBirthday()));
-            return stmt;
-        }, keyHolder);
+        try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement stmt = connection.prepareStatement(insertUserQuery, new String[]{"user_id"});
+                stmt.setString(1, user.getEmail());
+                stmt.setString(2, user.getLogin());
+                stmt.setString(3, user.getName());
+                stmt.setDate(4, Date.valueOf(user.getBirthday()));
+                return stmt;
+            }, keyHolder);
 
+        } catch (DataIntegrityViolationException exception) {
+            throw new DataIntegrityViolationException("Ошибка при добавлении пользователя в базу данных!");
+        }
         user.setId(keyHolder.getKey().longValue());
 
         log.debug("Добавлен новый пользователь: {}!", user.getLogin());

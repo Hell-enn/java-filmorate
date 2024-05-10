@@ -27,8 +27,14 @@ public class DirectorDbStorage implements DirectorStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @SuppressWarnings("checkstyle:Regexp")
     @Override
     public Director addDirector(Director director) {
+
+        SqlRowSet directorRows = jdbcTemplate.queryForRowSet("SELECT * FROM directors WHERE director_id = ?", director.getId());
+        if (directorRows.next())
+            throw new RuntimeException("Данный режиссер не найден!");
+
         String sql = "INSERT INTO directors (name) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
