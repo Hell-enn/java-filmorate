@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
@@ -21,11 +23,13 @@ import java.util.*;
 public class FilmService {
 
     private final FilmStorage filmDbStorage;
+    private final EventStorage eventDbStorage;
 
 
     /**
      * Метод добавляет фильм в список в случае, если он там отсутствует.
      * В противном случае возвращает null.
+     *
      * @param film
      * @return
      */
@@ -44,6 +48,7 @@ public class FilmService {
     /**
      * Метод обновляет фильм в списке в случае, если он там присутствует.
      * В противном случае выбрасывает исключение типа ValidationException.
+     *
      * @param film
      * @return
      */
@@ -56,6 +61,7 @@ public class FilmService {
 
     /**
      * Метод возвращает список фильмов из хранилища.
+     *
      * @return
      */
     public List<Film> getFilms() {
@@ -66,12 +72,21 @@ public class FilmService {
 
 
     /**
+     * Метод удаляет фильм с filmId из хранилища
+     */
+    public void deleteFilm(long filmId) {
+        filmDbStorage.deleteFilm(filmId);
+    }
+
+
+    /**
      * Закрытый служебный метод проверяет объект типа Film
      * на соответствие ряду условий. Используется впоследствие
      * для валидации объекта типа Film при попытке его добавления
      * или обновления в списке.
      * В случае неудачи выбрасывает исключение ValidationException
      * с сообщением об ошибке.
+     *
      * @param film
      */
     private void validateFilm(Film film) {
@@ -92,6 +107,7 @@ public class FilmService {
     /**
      * Метод добавляет в список лайков объекта film
      * id объекта user.
+     *
      * @param userId
      * @param filmId
      */
@@ -103,12 +119,14 @@ public class FilmService {
             throw new NotFoundException("Фильм отсутствует в списке!");
 
         filmDbStorage.addLike(filmId, userId);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), userId, "LIKE", "ADD", filmId));
     }
 
 
     /**
      * Метод удаляет из списка лайков объекта film
      * id объекта user.
+     *
      * @param userId
      * @param filmId
      */
@@ -119,28 +137,25 @@ public class FilmService {
         if (film == null)
             throw new NotFoundException("Фильм отсутствует в списке!");
 
-        if (filmDbStorage.getLikes((int) filmId).contains(userId))
-            filmDbStorage.deleteLike(filmId, userId);
+        filmDbStorage.deleteLike(filmId, userId);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), userId, "LIKE", "REMOVE", filmId));
     }
 
 
     /**
      * Метод возвращает набор id 10 самых популярных
      * фильмов.
+     *
      * @return
      */
-    public List<Film> getPopularFilms(long count) {
-
-        List<Film> sortedFilms = filmDbStorage.getFilms();
-        sortedFilms.sort(Comparator.comparingInt(film -> -filmDbStorage.getLikes((int) film.getId()).size()));
-        long amount = count <= 10 ? 10 : count;
-        return sortedFilms.subList(0, (int) amount);
-
+    public List<Film> getPopularFilms(long limit, long genreId, int year) {
+        return filmDbStorage.getPopularFilms(limit, genreId, year);
     }
 
 
     /**
      * Метод возвращает объект фильма по его id из хранилища.
+     *
      * @param id
      * @return
      */
@@ -152,5 +167,33 @@ public class FilmService {
 
         return film;
 
+    }
+
+    /**
+     * Метод возвращает спикок общих фильмов для пользователей с id user1Id и user2Id.
+     *
+     * @param id
+     * @param otherId
+     */
+    public List<Film> getCommonFilms(long id, long otherId) {
+
+        return filmDbStorage.getCommonFilms(id, otherId);
+
+    }
+
+    /**
+     * Метод возвращает спикок фильмов содержащих подстроку с сортировкой по популярности.
+     * @param query текст для поиска
+     * @param by параметры поиска - по названию или режиссеру, или вместе
+     */
+
+    public List<Film> getFilmsBySubstring(String query, List<String> by) {
+
+        return filmDbStorage.getFilmsBySubstring(query, by);
+
+    }
+
+    public List<Film> getDirectorFilms(long directorId, String sortBy) {
+        return filmDbStorage.getDirectorFilms(directorId, sortBy);
     }
 }

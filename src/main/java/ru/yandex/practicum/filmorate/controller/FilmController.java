@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 
@@ -26,6 +27,7 @@ public class FilmController {
      * Эндпоинт. Метод добавляяет новый фильм в список с
      * помощью соответствующего метода интерфеса хранилища -
      * FilmStorage. В случае успеха возвращает добавленный объект.
+     *
      * @param film
      * @return
      */
@@ -48,6 +50,7 @@ public class FilmController {
      * Эндпоинт. Метод обновляет фильм в списке с
      * помощью соответствующего метода интерфеса хранилища -
      * FilmStorage. В случае успеха возвращает обновлённый объект.
+     *
      * @param film
      * @return
      */
@@ -63,6 +66,7 @@ public class FilmController {
 
     /**
      * Эндпоинт. Метод возвращает список фильмов.
+     *
      * @return
      */
     @GetMapping("/films")
@@ -78,6 +82,7 @@ public class FilmController {
 
     /**
      * Эндпоинт. Метод возвращает объект фильма по его id.
+     *
      * @return
      */
     @GetMapping("/films/{id}")
@@ -88,6 +93,16 @@ public class FilmController {
             log.debug("Возвращаем фильм \"{}\"!", film.getName());
         return filmService.getFilm(id);
 
+    }
+
+
+    /**
+     * Эндпоинт. Удаляет Фильм с filmId
+     */
+    @DeleteMapping("/films/{id}")
+    public void deleteFilm(@PathVariable(name = "id") long filmId) {
+        log.info("Удаление фильма по id: {}", filmId);
+        filmService.deleteFilm(filmId);
     }
 
 
@@ -111,7 +126,7 @@ public class FilmController {
      */
     @DeleteMapping("/films/{id}/like/{userId}")
     public void deleteLike(@PathVariable long id,
-                        @PathVariable long userId) {
+                           @PathVariable long userId) {
 
         log.debug("Пользователь с id = " + userId + " удаляет лайк с фильма с id = " + id + "!");
         filmService.deleteLike(userId, id);
@@ -126,15 +141,48 @@ public class FilmController {
      * фильмов.
      */
     @GetMapping("/films/popular")
-    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
-
-        int filmsAmount = filmService.getFilms().size();
-        if (count > filmsAmount) {
-            log.debug("Возвращаем список " + filmsAmount + " самых популярных фильмов!");
-            return filmService.getPopularFilms(filmsAmount);
-        } else {
-            log.debug("Возвращаем список " + count + " самых популярных фильмов!");
-            return filmService.getPopularFilms(count);
-        }
+    public List<Film> getPopularFilms(@RequestParam(value = "count", required = false, defaultValue = "10") long limit,
+                                      @RequestParam(value = "genreId", required = false) Long genreId,
+                                      @RequestParam(value = "year", required = false) Integer year) {
+        return filmService.getPopularFilms(limit, genreId != null ? genreId : 0, year != null ? year : 0);
     }
+
+    /**
+     * Метод возвращает спикок общих фильмов для пользователей с id user1Id и user2Id.
+     * @param userId
+     * @param friendId
+     */
+    @GetMapping("/films/common")
+    public List<Film> getCommonFilms(@RequestParam long userId,
+                                     @RequestParam long friendId) {
+
+        return filmService.getCommonFilms(userId, friendId);
+
+    }
+
+    @GetMapping("/films/director/{directorId}")
+    public List<Film> getDirectorFilms(@PathVariable long directorId,
+                                       @RequestParam(required = false, defaultValue = "likes") String sortBy) {
+        return filmService.getDirectorFilms(directorId, sortBy);
+    }
+
+    /**
+     * Метод возвращает спикок фильмов содержащих подстроку с сортировкой по популярности.
+     * @param query текст для поиска
+     * @param by параметры поиска - по названию или режиссеру, или вместе
+     */
+    @GetMapping("/films/search")
+    public List<Film> getFilmsBySubstring(@RequestParam String query,
+                                          @RequestParam List<String> by) {
+
+        if (query.isBlank() | by.isEmpty()) {
+            log.debug("Не корректные параметры запроса");
+            throw new BadRequestException("Не корректные параметры запроса");
+        }
+
+        return filmService.getFilmsBySubstring(query, by);
+
+    }
+
+
 }

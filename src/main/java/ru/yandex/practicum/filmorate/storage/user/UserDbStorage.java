@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -10,7 +12,9 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -22,34 +26,38 @@ import java.util.*;
  * которая взаимодействует с SQL базой данных для работы с сущностями-пользователями.
  */
 @Component("userDbStorage")
+@RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
 
     private final Logger log = LoggerFactory.getLogger(UserDbStorage.class);
     private final JdbcTemplate jdbcTemplate;
-
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
+    private final FilmStorage filmDbStorage;
 
     @Override
     public User addUser(User user) {
 
+        if (user.getName().isBlank())
+            user.setName(user.getLogin());
+
         String insertUserQuery =
                 "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
 
-         KeyHolder keyHolder = new GeneratedKeyHolder();
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-         jdbcTemplate.update(connection -> {
-         PreparedStatement stmt = connection.prepareStatement(insertUserQuery, new String[]{"user_id"});
-         stmt.setString(1, user.getEmail());
-         stmt.setString(2, user.getLogin());
-         stmt.setString(3, user.getName());
-         stmt.setDate(4, Date.valueOf(user.getBirthday()));
-         return stmt;
-         }, keyHolder);
+        try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement stmt = connection.prepareStatement(insertUserQuery, new String[]{"user_id"});
+                stmt.setString(1, user.getEmail());
+                stmt.setString(2, user.getLogin());
+                stmt.setString(3, user.getName());
+                stmt.setDate(4, Date.valueOf(user.getBirthday()));
+                return stmt;
+            }, keyHolder);
 
-         user.setId(keyHolder.getKey().longValue());
+        } catch (DataIntegrityViolationException exception) {
+            throw new DataIntegrityViolationException("Ошибка при добавлении пользователя в базу данных!");
+        }
+        user.setId(keyHolder.getKey().longValue());
 
         log.debug("Добавлен новый пользователь: {}!", user.getLogin());
 
@@ -164,6 +172,7 @@ public class UserDbStorage implements UserStorage {
     /**
      * Закрытый служебный метод используется для получения объекта
      * пользователя из строки, полученной из базы данных (таблица 'users').
+     *
      * @param userRows
      * @return
      */
@@ -196,8 +205,8 @@ public class UserDbStorage implements UserStorage {
         }
 
         String friendshipQuery = "SELECT * " +
-                                 "FROM friendship " +
-                                 "WHERE following_user_id = ? AND followed_user_id = ?";
+                "FROM friendship " +
+                "WHERE following_user_id = ? AND followed_user_id = ?";
 
         SqlRowSet followingFriendRows = jdbcTemplate.queryForRowSet(friendshipQuery, followingFriendId, followedFriendId);
         SqlRowSet followedFriendRows = jdbcTemplate.queryForRowSet(friendshipQuery, followedFriendId, followingFriendId);
@@ -251,8 +260,8 @@ public class UserDbStorage implements UserStorage {
         }
 
         String friendshipQuery = "SELECT * " +
-                                 "FROM friendship " +
-                                 "WHERE following_user_id = ? AND followed_user_id = ?";
+                "FROM friendship " +
+                "WHERE following_user_id = ? AND followed_user_id = ?";
 
         SqlRowSet followingFriendRows = jdbcTemplate.queryForRowSet(friendshipQuery, followingFriendId, followedFriendId);
         SqlRowSet followedFriendRows = jdbcTemplate.queryForRowSet(friendshipQuery, followedFriendId, followingFriendId);
@@ -292,9 +301,9 @@ public class UserDbStorage implements UserStorage {
         List<User> friends = new ArrayList<>();
 
         String friendsQuery = "SELECT u.* " +
-                              "FROM friendship f " +
-                              "JOIN users u ON u.user_id = f.followed_user_id " +
-                              "WHERE following_user_id = ?";
+                "FROM friendship f " +
+                "JOIN users u ON u.user_id = f.followed_user_id " +
+                "WHERE following_user_id = ?";
 
         SqlRowSet friendsOfUserRows = jdbcTemplate.queryForRowSet(friendsQuery, userId);
 
@@ -319,13 +328,50 @@ public class UserDbStorage implements UserStorage {
 
         List<User> commonFriends = new ArrayList<>();
 
-        for (User friend: friends1) {
+        for (User friend : friends1) {
             if (friends2.contains(friend))
                 commonFriends.add(friend);
         }
 
         return commonFriends;
     }
+
+
+    @Override
+    public List<Film> getRecommendations(long userId) {
+
+        SqlRowSet userRow = jdbcTemplate.queryForRowSet("SELECT * FROM users WHERE user_id = ?", userId);
+        if (!userRow.next())
+            throw new NotFoundException("Пользователь не найден!");
+
+        List<Film> films = new ArrayList<>();
+
+        long mostMatchingUserId = 0;
+        String mostMatchingUserQuery = "SELECT l2.user_id, COUNT(l2.film_id) AS amount\n" +
+                "FROM likes l1\n" +
+                "JOIN likes l2 ON l1.film_id = l2.film_id AND l1.user_id <> l2.user_id\n" +
+                "WHERE l1.user_id = ?\n" +
+                "GROUP BY l2.user_id\n" +
+                "ORDER BY amount DESC\n" +
+                "LIMIT 1";
+
+        SqlRowSet mostMatchingUserRow = jdbcTemplate.queryForRowSet(mostMatchingUserQuery, userId);
+        if (mostMatchingUserRow.next())
+            mostMatchingUserId = mostMatchingUserRow.getLong("user_id");
+
+        if (mostMatchingUserId != 0) {
+            String suitableFilms = "SELECT f.*\n" +
+                    "FROM likes l\n" +
+                    "JOIN film f ON l.film_id = f.film_id\n" +
+                    "LEFT JOIN likes l2 ON l.film_id = l2.film_id AND l2.user_id = ?\n" +
+                    "WHERE l2.film_id IS NULL AND l.user_id = ?";
+
+            SqlRowSet suitableFilmRows = jdbcTemplate.queryForRowSet(suitableFilms, userId, mostMatchingUserId);
+            while (suitableFilmRows.next())
+                films.add(filmDbStorage.getFilmFromSqlRow(suitableFilmRows));
+        }
+
+        return films;
+    }
+
 }
-
-

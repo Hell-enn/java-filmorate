@@ -103,8 +103,9 @@ public class RatingDbStorage implements RatingStorage {
     public MPA getFilmRating(Long filmId) {
 
         SqlRowSet ratingRows = jdbcTemplate.queryForRowSet("SELECT * " +
-                                                               "FROM rating " +
-                                                               "WHERE rating_id = (SELECT rating_id FROM film WHERE film_id = ?)");
+                                                                "FROM rating r " +
+                                                                "JOIN film f ON r.rating_id = f.rating_id " +
+                                                                "WHERE film_id = ?");
 
         if (ratingRows.next()) {
             MPA rating = getRatingFromSqlRow(ratingRows);

@@ -6,6 +6,23 @@
 - формирование рейтинга отдельных фильмов путем добавления лайков пользователем.
 - взаимодействие между отдельными пользователями приложения путем добавления друг друга в друзья.
 
+Новый функционал приложения:
+- Функциональность «Отзывы».
+- Функциональность «Поиск».
+- Функциональность «Общие фильмы».
+- Функциональность «Рекомендации».
+- Функциональность «Лента событий».
+- Удаление пользователей и фильмов.
+- Вывод популярных фильмов по жанру и годам.
+- Добавление режиссеров в фильмы.
+
+Новые таблицы:
+- review.
+- review_rate.
+- events.
+- directors.
+- film_directors.
+
 На текущем этапе приложение хранит данные в течение времени работы сервера. Такой способ хранения 
 ставит под угрозу сохранность информации, связанной с бизнес-логикой, и отрицает возможность 
 дальнейшего расширения приложения. 
@@ -82,7 +99,44 @@
   примет заявку following_user, поле примет значение 1. Если решит отклонить заявку, проигнорирует её или удалит following_user из
   списка друзей - 0).
 
+`review`
 
+Содержит данные об отзывах пользователей. Таблица включает такие поля:
+- первичный ключ `review_id` - идентификатор отзыва;
+- `content` - содержание отзыва;
+- `is_positive` - тип отзыва;
+- `user_id` - идентификатор пользователя. (Ссылается на таблицу `users`); 
+- `film_id` - идентификатор фильма. (Ссылается на таблицу `films`);
+
+`review_rate`
+
+Содержит данные о полезности отзыва. Таблица включает такие поля:
+
+- `review_id` - идентификатор отзыва. (Ссылается на таблицу `review`);
+- `user_id` - идентификатор пользователя. (Ссылается на таблицу `users`);
+- `is_useful` - полезность отзыва;
+
+`events`
+
+Содержит данные о действиях пользователя. Таблица включает такие поля:
+- первичный ключ `event_id` - идентификатор операции;
+- `timestamp` - временная ветка операции;
+- `user_id` - идентификатор пользователя. (Ссылается на таблицу `users`);
+- `event_type` - сущность над которой проводится операция;
+- `operation` - тип проводимой операции;
+- `entity_id` - идентификатор сущности, над которой проводится операция;
+
+`directors`
+
+Содержит данные режиссера. Таблица включает такие поля:
+- первичный ключ `director_id` - идентификатор режиссера;
+- `name` - ФИО режиссера;
+
+`film_directors`
+
+Таблица-связка содержит информацию о фильмах и их режиссерах. Таблица включает такие поля:
+- `film_id` - часть составного первичного ключа (ссылается на таблицу `films`), идентификатор фильма;
+- `director_id` - часть составного первичного ключа (ссылается на таблицу `directors`), идентификатор режиссера;
 
 Примеры запросов к описанной базе данных: 
 - Получение перечня всех фильмов
@@ -108,6 +162,18 @@ ORDER BY likes_amount
 LIMIT 10;
 ```
 
+- Получение 10 самых популярных комедий за 2022 год
+```agsl
+SELECT f.* 
+FROM film AS f 
+LEFT JOIN likes AS l ON f.film_id = l.film_id
+LEFT JOIN genre_film AS gf ON f.film_id = gf.film_id
+WHERE gf.genre_id = 1 AND YEAR(f.release_date) = 2022
+GROUP BY f.film_id 
+ORDER BY COUNT(l.user_id) DESC 
+LIMIT 10;
+```
+
 - Добавление нового фильма(в поле `film_id` ничего не добавляем, поскольку оно будет IDENTITY)
 ```agsl
 INSERT INTO films 
@@ -120,6 +186,12 @@ VALUES
 ```agsl
 UPDATE films 
 SET release_date = '2001-01-01'
+WHERE film_id = 3;
+```
+
+- Удаление фильма с id = 3
+```agsl
+DELETE FROM film 
 WHERE film_id = 3;
 ```
 
@@ -231,3 +303,128 @@ FROM
  LEFT JOIN users as u2 ON common_friends.user_id = u2.user_id;
 ```
 
+- Получение общих с другом фильмов с сортировкой по их популярности
+```agsl
+SELECT  f.* , count(l.FILM_ID) AS top 
+FROM likes l 
+JOIN film f ON l.film_id = f.film_id 
+WHERE l.USER_ID = 1 OR l.USER_ID  = 2 
+GROUP BY f.FILM_ID
+having count(distinct l.USER_ID) = 2 
+ORDER BY top desc;
+```
+
+- Удаление пользователя с id = 1
+```agsl
+DELETE FROM users WHERE user_id = 1;
+```
+
+- Добавление нового отзыва от пользователя с id = 1 к фильму с id = 2
+```agsl
+INSERT INTO review (content, is_positive, user_id, film_id) 
+VALUES ('Текст', true, 1, 2);
+```
+
+- Обновление отзыва с id = 1
+```agsl
+UPDATE review 
+SET content = 'Новый текст'
+WHERE review_id = 1;
+```
+
+- Удаление отзыва с id = 1
+```agsl
+DELETE FROM review 
+WHERE review_id = 1;
+```
+
+- Получение всех отзывов к фильму с id = 1
+```agsl
+SELECT *
+FROM review
+WHERE film_id = 1;
+```
+
+- Получение отзыва с id = 1
+```agsl
+SELECT * 
+FROM review
+WHERE review_id = 1;
+```
+
+- Добавление пользователем c id = 1 лайка отзыву c id = 2
+```agsl
+INSERT INTO review_rate (review_id, user_id, is_useful) 
+VALUES (2, 1, true);
+```
+
+- Удаление пользователем c id = 1 лайка с отзыва c id = 2
+```agsl
+DELETE FROM review_rate 
+WHERE review_id = 2 AND user_id = 1;
+```
+
+- Получение ленты событий пользователя с id = 1
+```agsl
+SELECT * 
+FROM events 
+WHERE user_id = 1;
+```
+
+- Добавление нового режиссера 
+```agsl
+INSERT INTO directors (name) 
+VALUES ('стивен спилберг');
+```
+
+- Обновление имени режиссера с id = 1
+```agsl
+UPDATE directors SET name = 'Стивен Спилберг' 
+WHERE director_id = 1;
+```
+
+- Получение режиссера c id = 1 
+```agsl
+SELECT * 
+FROM directors 
+WHERE director_id = 1;
+```
+
+- Получение всех режиссеров
+```agsl
+SELECT * 
+FROM directors;
+```
+
+- Удаление режиссера с id = 1 
+```agsl
+DELETE FROM directors 
+WHERE director_id = 1;
+```
+
+- Получение фильмов и режиссеров имеющих в имени 'Крад' (Поиск по названию)
+```agsl
+SELECT * 
+FROM FILM f  
+LEFT JOIN FILM_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID
+LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID
+WHERE (f.NAME ILIKE 'Крад' OR d.NAME ILIKE 'Крад')
+ORDER BY (SELECT COUNT(film_id) FROM likes WHERE film_id = f.film_id) DESC;
+```
+
+- Получение списка рекомендации по фильмам для пользователя с id = 1
+```agsl
+SELECT l2.user_id, COUNT(l2.film_id) AS amount
+FROM likes l1
+JOIN likes l2 ON l1.film_id = l2.film_id AND l1.user_id <> l2.user_id
+WHERE l1.user_id = 1
+GROUP BY l2.user_id
+ORDER BY amount DESC
+LIMIT 1; //находим N пользователя;
+
+SELECT f.*
+FROM likes l
+JOIN film f ON l.film_id = f.film_id
+LEFT JOIN likes l2 ON l.film_id = l2.film_id AND l2.user_id = 1
+WHERE l2.film_id IS NULL AND l.user_id = N;
+```

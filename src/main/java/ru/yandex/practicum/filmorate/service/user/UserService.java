@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -21,6 +24,7 @@ import java.util.List;
 public class UserService {
 
     private final UserStorage userDbStorage;
+    private final EventStorage eventDbStorage;
 
 
     /**
@@ -28,6 +32,7 @@ public class UserService {
      * если он в нём отсутствует. Иначе выбрасывает исключение
      * ValidateException с сообщением об ошибке.
      * В случае успеха возвращает добавленный объект.
+     *
      * @param user
      * @return
      */
@@ -45,6 +50,7 @@ public class UserService {
      * если он в нём присутствует. Иначе выбрасывает исключение
      * ValidateException с сообщением об ошибке.
      * В случае успеха возвращает обновлённый объект.
+     *
      * @param user
      * @return
      */
@@ -55,6 +61,7 @@ public class UserService {
 
     /**
      * Метод возвращает список пользователей из хранилища.
+     *
      * @return
      */
     public List<User> getUsers() {
@@ -65,12 +72,21 @@ public class UserService {
 
 
     /**
+     * Метод удаляет пользователя с userId из хранилеща
+     */
+    public void deletUser(long userId) {
+        userDbStorage.deleteUser(userId);
+    }
+
+
+    /**
      * Закрытый служебный метод проверяет объект типа User
      * на соответствие ряду условий. Используется впоследствие
      * для валидации объекта типа User при попытке его добавления
      * или обновления в списке.
      * В случае неудачи выбрасывает исключение ValidationException
      * с сообщением об ошибке.
+     *
      * @param user
      */
     private void validateUser(User user) {
@@ -85,8 +101,6 @@ public class UserService {
             message = "Неправильный формат электронной почты!";
         else if (user.getBirthday().isAfter(LocalDate.now()))
             message = "Неверно указана дата рождения!";
-        else if (user.getName().isBlank())
-            message = "Имя пользователя отсутствует!";
 
         if (!message.isBlank()) {
             throw new ValidationException(message);
@@ -98,6 +112,7 @@ public class UserService {
     /**
      * Метод добавляет в список друзей объекта userFrom
      * id объекта userTo и наоборот.
+     *
      * @param userFromId
      * @param userToId
      */
@@ -109,24 +124,28 @@ public class UserService {
         if (!userDbStorage.containsUser(userToId))
             throw new NotFoundException("Пользователь " + userToId + " отсутствует в списке!");
 
-        return userDbStorage.addFriend(userFromId, userToId);
-
+        User user = userDbStorage.addFriend(userFromId, userToId);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), userFromId, "FRIEND", "ADD", userToId));
+        return user;
     }
 
 
     /**
      * Метод удаляет из списка друзей объекта userFrom
      * id объекта userTo и наоборот.
+     *
      * @param followingUserId
      * @param followedUserId
      */
     public void deleteFriend(long followingUserId, long followedUserId) {
         userDbStorage.deleteFriend(followingUserId, followedUserId);
+        eventDbStorage.addEvent(new Event(System.currentTimeMillis(), followingUserId, "FRIEND", "REMOVE", followedUserId));
     }
 
 
     /**
      * Метод возвращает список друзей пользователя с id.
+     *
      * @param userId
      * @return
      */
@@ -143,6 +162,7 @@ public class UserService {
     /**
      * Метод возвращает набор id общих друзей для двух
      * объектов типа User, переданных в качестве аргументов.
+     *
      * @param user1Id
      * @param user2Id
      * @return
@@ -154,6 +174,7 @@ public class UserService {
 
     /**
      * Метод возвращает объект пользователя по его id из хранилища.
+     *
      * @param id
      * @return
      */
@@ -164,6 +185,32 @@ public class UserService {
             throw new NotFoundException("Пользователь " + id + " отсутствует в списке!");
 
         return user;
+
+    }
+
+
+    /**
+     * Метод возвращает ленту событий пользователя по его id из хранилища.
+     *
+     * @param id
+     * @return
+     */
+    public List<Event> getUserFeed(long id) {
+        getUser(id);
+        return eventDbStorage.getUserFeed(id);
+    }
+
+
+    /**
+     * Эндпоинт. Метод возвращает список фильмов, рекомендованных
+     * к просмотру пользователю с id, на основании оценок других
+     * пользователей со схожими интересами.
+     *
+     * @return
+     */
+    public List<Film> getRecommendations(long id) {
+
+        return userDbStorage.getRecommendations(id);
 
     }
 }

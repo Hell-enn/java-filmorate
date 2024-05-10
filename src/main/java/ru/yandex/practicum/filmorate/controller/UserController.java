@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
@@ -25,6 +27,7 @@ public class UserController {
      * Эндпоинт. Метод добавляет нового пользователя в список с
      * помощью соответствующего метода интерфеса хранилища -
      * UserStorage. В случае успеха возвращает добавленный объект.
+     *
      * @param user
      * @return
      */
@@ -48,6 +51,7 @@ public class UserController {
      * если он в нём присутствует. Иначе выбрасывает исключение
      * ValidateException с сообщением об ошибке.
      * В случае успеха возвращает обновлённый объект.
+     *
      * @param user
      * @return
      */
@@ -63,6 +67,7 @@ public class UserController {
 
     /**
      * Эндпоинт. Метод возвращает список пользователей.
+     *
      * @return
      */
     @GetMapping("/users")
@@ -77,7 +82,18 @@ public class UserController {
 
 
     /**
+     * Эндпоинт. Удаляет пользователя с userId
+     */
+    @DeleteMapping("/users/{id}")
+    public void deleteUser(@PathVariable(name = "id") long userId) {
+        log.info("Удаление фильма по id: {}", userId);
+        userService.deletUser(userId);
+    }
+
+
+    /**
      * Эндпоинт. Метод возвращает объект пользователя по его id.
+     *
      * @return
      */
     @GetMapping("/users/{id}")
@@ -94,11 +110,12 @@ public class UserController {
     /**
      * Эндпоинт. Метод добавляет в друзья пользователя с friendId
      * пользователю с id и наоборот.
+     *
      * @return
      */
     @PutMapping("/users/{id}/friends/{friendId}")
     public User addFriend(@PathVariable long id,
-                               @PathVariable long friendId) {
+                          @PathVariable long friendId) {
 
         return userService.addFriend(id, friendId);
 
@@ -108,11 +125,12 @@ public class UserController {
     /**
      * Эндпоинт. Метод удаляет из друзей пользователя с friendId
      * у пользователя с id и наоборот.
+     *
      * @return
      */
     @DeleteMapping("/users/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable long id,
-                          @PathVariable long friendId) {
+                             @PathVariable long friendId) {
 
         log.debug("Пользователь с id = " + id + " удаляет из друзей пользователя с id = " + friendId + "!");
         userService.deleteFriend(id, friendId);
@@ -122,6 +140,7 @@ public class UserController {
 
     /**
      * Эндпоинт. Метод возвращает список друзей пользователя с id.
+     *
      * @return
      */
     @GetMapping("/users/{id}/friends")
@@ -136,6 +155,7 @@ public class UserController {
     /**
      * Эндпоинт. Метод возвращает список общих друзей двух
      * пользователей - с id и otherId.
+     *
      * @return
      */
     @GetMapping("/users/{id}/friends/common/{otherId}")
@@ -143,6 +163,32 @@ public class UserController {
                                        @PathVariable long otherId) {
 
         return userService.getCommonFriends(id, otherId);
+
+    }
+
+
+    /**
+     * Эндпоинт. Метод возвращает ленту событий пользователя id .
+     *
+     * @return
+     */
+    @GetMapping("/users/{id}/feed")
+    public List<Event> getUserFeed(@PathVariable long id) {
+        return userService.getUserFeed(id);
+    }
+
+
+    /**
+     * Эндпоинт. Метод возвращает список фильмов, рекомендованных
+     * к просмотру пользователю с id, на основании оценок других
+     * пользователей со схожими интересами.
+     *
+     * @return
+     */
+    @GetMapping("/users/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable long id) {
+
+        return userService.getRecommendations(id);
 
     }
 }

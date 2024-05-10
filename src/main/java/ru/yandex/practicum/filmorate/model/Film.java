@@ -40,6 +40,7 @@ public class Film {
     private final int duration;
     private MPA mpa;
     private List<Genre> genres;
+    private List<Director> directors;
 
     /**
      * Поле genres не учитывается в equals, т.к. при прогонке тестов
