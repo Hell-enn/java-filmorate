@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,10 +19,11 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 class UserDbStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private UserDbStorage userStorage;
+    private FilmDbStorage filmDbStorage;
 
     @BeforeEach
     public void createContextBefore() {
-        userStorage = new UserDbStorage(jdbcTemplate);
+        userStorage = new UserDbStorage(jdbcTemplate, filmDbStorage);
     }
 
 
