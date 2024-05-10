@@ -28,7 +28,7 @@ public class FilmDbStorageTest {
     @BeforeEach
     public void createContextBefore() {
         filmStorage = new FilmDbStorage(jdbcTemplate);
-        userStorage = new UserDbStorage(jdbcTemplate);
+        userStorage = new UserDbStorage(jdbcTemplate, filmStorage);
 
         jdbcTemplate.update("DELETE FROM directors");
         jdbcTemplate.update("INSERT INTO directors (director_id, name) VALUES (1, 'Режисcер 1'), (2, 'Режисер 2')");

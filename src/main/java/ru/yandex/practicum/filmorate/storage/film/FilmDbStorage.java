@@ -521,10 +521,12 @@ public class FilmDbStorage implements FilmStorage {
                     "WHERE fd.director_id = ? " +
                     "ORDER BY release_date ";
         } else if ("likes".equals(sortBy)) {
-            sql = "SELECT f.*, (SELECT COUNT(*) FROM likes WHERE film_id = f.film_id) like_amount " +
+            sql = "SELECT f.*, COUNT(l.user_id) like_amount " +
                     "FROM film f " +
                     "LEFT JOIN film_directors fd ON f.film_id = fd.film_id " +
+                    "LEFT JOIN likes l ON f.film_id = l.film_id " +
                     "WHERE fd.director_id = ? " +
+                    "GROUP BY f.film_id " +
                     "ORDER BY like_amount ";
         } else
             throw new IllegalArgumentException("Неверный параметр");

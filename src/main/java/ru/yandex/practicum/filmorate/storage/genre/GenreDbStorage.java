@@ -108,8 +108,9 @@ public class GenreDbStorage implements GenreStorage {
         List<Genre> genres = new ArrayList<>();
 
         SqlRowSet genreRows = jdbcTemplate.queryForRowSet("SELECT * " +
-                                                              "FROM genre " +
-                                                              "WHERE genre_id IN (SELECT genre_id FROM genre_film WHERE film_id = ?)");
+                                                                "FROM genre g " +
+                                                                "JOIN genre_film gf ON gf.genre_id = g.genre_id " +
+                                                                "WHERE gf.film_id = ?");
 
         while (genreRows.next()) {
             genres.add(getGenreFromSqlRow(genreRows));
